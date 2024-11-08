@@ -47,10 +47,7 @@ class GFSTasks(Tasks):
         gfs_enkf = True if self.app_config.do_hybvar and 'gfs' in self.app_config.eupd_runs else False
 
         deps = []
-        dep_dict = {'type': 'metatask', 'name': 'gdas_atmos_prod', 'offset': f"-{timedelta_to_HMS(self._base['interval_gdas'])}"}
-        deps.append(rocoto.add_dependency(dep_dict))
-        data = f'{atm_hist_path}/gdas.t@Hz.atmf009.nc'
-        dep_dict = {'type': 'data', 'data': data, 'offset': f"-{timedelta_to_HMS(self._base['interval_gdas'])}"}
+        dep_dict = {'type': 'metatask', 'name': 'enkfgdas_epmn', 'offset': f"-{timedelta_to_HMS(self._base['interval_gdas'])}"}
         deps.append(rocoto.add_dependency(dep_dict))
         data = f'{dump_path}/{self.run}.t@Hz.updated.status.tm00.bufr_d'
         dep_dict = {'type': 'data', 'data': data}
@@ -2690,8 +2687,6 @@ class GFSTasks(Tasks):
             return grp, dep, lst
 
         deps = []
-        dep_dict = {'type': 'task', 'name': f'{self.run.replace("enkf","")}_analcalc'}
-        deps.append(rocoto.add_dependency(dep_dict))
         if self.app_config.do_jediatmens:
             dep_dict = {'type': 'task', 'name': f'{self.run}_atmensanlfinal'}
         else:
@@ -2736,8 +2731,6 @@ class GFSTasks(Tasks):
         # eupd_run = 'gdas' if 'gdas' in self.app_config.eupd_runs else 'gfs'
 
         deps = []
-        dep_dict = {'type': 'task', 'name': f'{self.run.replace("enkf","")}_analcalc'}
-        deps.append(rocoto.add_dependency(dep_dict))
         if self.app_config.do_jediatmens:
             dep_dict = {'type': 'task', 'name': f'{self.run}_atmensanlfinal'}
         else:

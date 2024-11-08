@@ -75,16 +75,16 @@ export DO_NPOESS="@DO_NPOESS@"           # NPOESS products
 export DO_TRACKER="@DO_TRACKER@"         # Hurricane track verification
 export DO_GENESIS="@DO_GENESIS@"         # Cyclone genesis verification
 export DO_GENESIS_FSU="@DO_GENESIS_FSU@" # Cyclone genesis verification (FSU)
-export DO_VERFOZN="YES"                  # Ozone data assimilation monitoring
-export DO_VERFRAD="YES"                  # Radiance data assimilation monitoring
-export DO_VMINMON="YES"                  # GSI minimization monitoring
+export DO_VERFOZN="NO"                  # Ozone data assimilation monitoring
+export DO_VERFRAD="NO"                  # Radiance data assimilation monitoring
+export DO_VMINMON="NO"                  # GSI minimization monitoring
 export DO_MOS="NO"                       # GFS Model Output Statistics - Only supported on WCOSS2
 
 # NO for retrospective parallel; YES for real-time parallel
 #  arch.sh uses REALTIME for MOS.  Need to set REALTIME=YES
 #  if want MOS written to HPSS.   Should update arch.sh to
 #  use RUNMOS flag
-export REALTIME="YES"
+export REALTIME="NO"
 
 # Experiment mode (cycled or forecast-only)
 export MODE="@MODE@" # cycled/forecast-only
@@ -283,7 +283,7 @@ export FHOUT_ICE=3
 export EUPD_CYC="@EUPD_CYC@"
 
 # GFS cycle info
-export INTERVAL_GFS=@INTERVAL_GFS@ # Frequency of GFS forecast
+export INTERVAL_GFS=0 # Frequency of GFS forecast
 export SDATE_GFS=@SDATE_GFS@
 
 # GFS output and frequency
@@ -383,7 +383,7 @@ if [[ ${DOHYBVAR} = "YES" ]]; then
         export FHOUT_ENKF=3
     fi
 fi
-
+export RECENTER_ENKF="NO"
 # if 3DVAR and IAU
 if [[ ${DOHYBVAR} == "NO" && ${DOIAU} == "YES"  ]]; then
     export IAUFHRS="6,"
@@ -423,7 +423,7 @@ fi
 export GSI_SOILANAL=@GSI_SOILANAL@
 
 # turned on nsst in anal and/or fcst steps, and turn off rtgsst
-export DONST="YES"
+export DONST="NO"
 if [[ ${DONST} = "YES" ]]; then export FNTSFA="        "; fi
 
 # The switch to apply SST elevation correction or not
@@ -449,8 +449,8 @@ export netcdf_diag=".true."
 export binary_diag=".false."
 
 # Verification options
-export DO_METP="@DO_METP@"   # Run METPLUS jobs - set METPLUS settings in config.metp
-export DO_FIT2OBS="YES"      # Run fit to observations package
+export DO_METP="NO"   # Run METPLUS jobs - set METPLUS settings in config.metp
+export DO_FIT2OBS="NO"      # Run fit to observations package
 export DO_VRFY_OCEANDA="@DO_VRFY_OCEANDA@"  # Run SOCA Ocean and Seaice DA verification tasks
 
 #--online archive of netcdf files for fit2obs verification

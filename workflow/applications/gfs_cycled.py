@@ -290,10 +290,22 @@ class GFSCycledAppConfig(AppConfig):
         gfs_tasks += gdas_gfs_common_cleanup_tasks
 
         tasks = dict()
+                gdas_tasks.remove("anal")
+        gdas_tasks.remove("sfcanl")
+        gdas_tasks.remove("analcalc")
+        gdas_tasks.remove("analdiag")
+        gdas_tasks.remove("fcst")
+        gdas_tasks.remove("atmanlprod")
+        gdas_tasks.remove("stage_ic")
+        gdas_tasks.remove("arch")
+        gdas_tasks.remove("atmos_prod")
+        gdas_tasks.remove("atmanlupp")
+        gdas_tasks.remove("cleanup")
         tasks['gdas'] = gdas_tasks
 
         if self.do_hybvar and 'gdas' in self.eupd_runs:
             enkfgdas_tasks = hybrid_tasks + hybrid_after_eupd_tasks
+            enkfgdas_tasks.remove("echgres")
             tasks['enkfgdas'] = enkfgdas_tasks
 
         # Add RUN=gfs tasks if running early cycle
