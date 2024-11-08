@@ -290,7 +290,7 @@ class GFSCycledAppConfig(AppConfig):
         gfs_tasks += gdas_gfs_common_cleanup_tasks
 
         tasks = dict()
-                gdas_tasks.remove("anal")
+        gdas_tasks.remove("anal")
         gdas_tasks.remove("sfcanl")
         gdas_tasks.remove("analcalc")
         gdas_tasks.remove("analdiag")
