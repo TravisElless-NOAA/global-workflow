@@ -423,7 +423,7 @@ fi
 export GSI_SOILANAL=@GSI_SOILANAL@
 
 # turned on nsst in anal and/or fcst steps, and turn off rtgsst
-export DONST="NO"
+export DONST="YES"
 if [[ ${DONST} = "YES" ]]; then export FNTSFA="        "; fi
 
 # The switch to apply SST elevation correction or not
