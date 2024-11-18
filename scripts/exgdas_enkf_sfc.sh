@@ -109,11 +109,11 @@ else
     export CYCLVARS="FSNOL=${SNOW_NUDGE_COEFF},$CYCLVARS"
 fi
 
-if [ $DONST = "YES" ]; then
-    export NST_FILE=${NST_FILE:-${COM_ATMOS_ANALYSIS_DET}/${APREFIX}dtfanl.nc}
-else
+#if [ $DONST = "YES" ]; then
+#    export NST_FILE=${NST_FILE:-${COM_ATMOS_ANALYSIS_DET}/${APREFIX}dtfanl.nc}
+#else
     export NST_FILE="NULL"
-fi
+#fi
 
 export APRUNCY=${APRUN_CYCLE:-$APRUN_ESFC}
 export OMP_NUM_THREADS_CY=${NTHREADS_CYCLE:-$NTHREADS_ESFC}

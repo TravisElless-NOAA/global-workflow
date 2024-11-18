@@ -9,7 +9,7 @@ enkf:
         {% for fhr in range(fhmin, fhmax + 1, fhout) %}
         - "logs/{{ cycle_YMDH }}/{{ RUN }}_epos{{ '%03d' % (fhr - fhmin) }}.log"
         {% endfor %}
-        - "logs/{{ cycle_YMDH }}/{{ RUN }}_echgres.log"
+        #- "logs/{{ cycle_YMDH }}/{{ RUN }}_echgres.log"
         - "logs/{{ cycle_YMDH }}/{{ RUN }}_esfc.log"
         {% for grp in range(IAUFHRS | length) %}
         - "logs/{{ cycle_YMDH }}/{{ RUN }}_ecen{{ '%03d' % grp }}.log"
