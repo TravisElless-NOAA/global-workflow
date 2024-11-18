@@ -108,7 +108,7 @@ else
     export SNOW_NUDGE_COEFF=${SNOW_NUDGE_COEFF:-0.}
     export CYCLVARS="FSNOL=${SNOW_NUDGE_COEFF},$CYCLVARS"
 fi
-export DONST = "NO"
+export DONST="NO"
 #if [ $DONST = "YES" ]; then
 #    export NST_FILE=${NST_FILE:-${COM_ATMOS_ANALYSIS_DET}/${APREFIX}dtfanl.nc}
 #else
