@@ -45,6 +45,7 @@ declare -rx COM_OBS_TMPL COM_RTOFS_TMPL
 declare -rx COM_OBSDMP_TMPL='${DMPDIR}/${DUMP}${DUMP_SUFFIX}.${YMD}/${HH}/atmos'
 
 COM_BASE='${ROTDIR}/${RUN}.${YMD}/${HH}/${MEMDIR}'
+COM_BASE_NOMEM='${ROTDIR}/${RUN}.${YMD}/${HH}/'
 
 declare -rx COM_TOP_TMPL='${ROTDIR}/${RUN}.${YMD}/${HH}'
 
@@ -54,6 +55,7 @@ declare -rx COM_OBS_JEDI=${COM_BASE}'/obs_jedi'
 declare -rx COM_ATMOS_INPUT_TMPL=${COM_BASE}'/model/atmos/input'
 declare -rx COM_ATMOS_RESTART_TMPL=${COM_BASE}'/model/atmos/restart'
 declare -rx COM_ATMOS_ANALYSIS_TMPL=${COM_BASE}'/analysis/atmos'
+declare -rx COM_ENS_ATMOS_ANALYSIS_TMPL=${COM_BASE_NOMEM}'/ensstat/analysis/atmos'
 declare -rx COM_SNOW_ANALYSIS_TMPL=${COM_BASE}'/analysis/snow'
 declare -rx COM_ATMOS_HISTORY_TMPL=${COM_BASE}'/model/atmos/history'
 declare -rx COM_ATMOS_MASTER_TMPL=${COM_BASE}'/model/atmos/master'

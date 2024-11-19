@@ -1,11 +1,25 @@
 atmosphere_cold:
     mkdir:
+        {% for mem in range(-1,0) %}
+        {% set imem = mem - first_mem %}
+        {% set COMOUT_ENS_ATMOS_ANALYSIS_MEM = COMOUT_ENS_ATMOS_ANALYSIS_MEM_list[imem] %}
+        - "{{ COMOUT_ENS_ATMOS_ANALYSIS_MEM }}"
+        {% endfor %} 
         {% for mem in range(first_mem, last_mem + 1) %}
         {% set imem = mem - first_mem %}
         {% set COMOUT_ATMOS_INPUT_MEM = COMOUT_ATMOS_INPUT_MEM_list[imem] %}
         - "{{ COMOUT_ATMOS_INPUT_MEM }}"
         {% endfor %} # mem loop
     copy:
+        {% for mem in range(-1,0) %}
+        {% set imem = mem - first_mem %}
+        {% set COMOUT_ENS_ATMOS_ANALYSIS_MEM = COMOUT_ENS_ATMOS_ANALYSIS_MEM_list[imem] %}
+        {% for aftype in ["abias.ensmean", "abias_air.ensmean", "abias_int.ensmean", "abias_pc.ensmean", "radstat.ensmean"] %}
+        #{% if path_exists(ICSDIR ~ "/" ~ COMOUT_ENS_ATMOS_ANALYSIS_MEM | relpath(ROTDIR) ~ "/" ~ RUN ~ ".t" ~ current_cycle_HH ~ "z." ~ aftype) %}
+        - ["{{ ICSDIR }}/{{ COMOUT_ENS_ATMOS_ANALYSIS_MEM | relpath(ROTDIR) }}/{{ RUN }}.t{{ current_cycle_HH }}z.{{ aftype }}", "{{ COMOUT_ENS_ATMOS_ANALYSIS_MEM }}"]
+        #{% endif %}
+        {% endfor %}
+        {% endfor %}
         {% for mem in range(first_mem, last_mem + 1) %}
         {% set imem = mem - first_mem %}
         {% set COMOUT_ATMOS_INPUT_MEM = COMOUT_ATMOS_INPUT_MEM_list[imem] %}
