@@ -62,7 +62,7 @@ fi
 # For running real-time parallels, execute tropcy_qc and
 # copy files from operational syndata directory to a local directory.
 # Otherwise, copy existing tcvital data from globaldump.
-
+export PROCESS_TROPCY="NO"
 if [[ ${PROCESS_TROPCY} = "YES" ]]; then
 
     export COMINsyn=${COMINsyn:-$(compath.py gfs/prod/syndat)}
@@ -76,7 +76,7 @@ if [[ ${PROCESS_TROPCY} = "YES" ]]; then
 
     if [[ ${ROTDIR_DUMP} = "YES" ]]; then rm "${COM_OBS}/${RUN_local}.t${cyc}z.syndata.tcvitals.tm00"; fi
 
-    "${HOMEgfs}/jobs/JGLOBAL_ATMOS_TROPCY_QC_RELOC"
+#    "${HOMEgfs}/jobs/JGLOBAL_ATMOS_TROPCY_QC_RELOC"
     status=$?
     [[ ${status} -ne 0 ]] && exit ${status}
 
@@ -97,6 +97,9 @@ if [[ ${MAKE_PREPBUFR} = "YES" ]]; then
     export job="j${RUN_local}_prep_${cyc}"
     export COMIN=${COM_OBS}
     export COMOUT=${COM_OBS}
+    RUN="enkfgdas" YMD=${gPDY} HH=${gcyc} declare_from_tmpl -rx COMINenkfgdasprev:COM_ENS_ATMOS_HISTORY_TMPL
+    RUN="enkfgdas" YMD=${gPDY} HH=${gcyc} declare_from_tmpl -rx COMINenkfgdasmemprev:COM_ENS_MEM1_ATMOS_HISTORY_TMPL
+    RUN="gdas" YMD=${gPDY} HH=${gcyc} declare_from_tmpl -rx COMINgdasprev:COM_ATMOS_HISTORY_TMPL
     RUN="gdas" YMD=${PDY} HH=${cyc} declare_from_tmpl -rx COMINgdas:COM_ATMOS_HISTORY_TMPL
     RUN="gfs" YMD=${PDY} HH=${cyc} declare_from_tmpl -rx COMINgfs:COM_ATMOS_HISTORY_TMPL
     if [[ ${ROTDIR_DUMP} = "NO" ]]; then
@@ -110,7 +113,13 @@ if [[ ${MAKE_PREPBUFR} = "YES" ]]; then
     if [[ ${MAKE_NSSTBUFR:-"NO"} = "NO" ]]; then
         export MAKE_NSSTBUFR="NO"
     fi
-
+    mkdir -p $COMINgdasprev
+    ln -sf $COMINenkfgdasprev/enkfgdas.t${gcyc}z.atmf003.ensmean.nc $COMINgdasprev/gdas.t${gcyc}z.atmf003.nc
+    ln -sf $COMINenkfgdasmemprev/enkfgdas.t${gcyc}z.atm.logf003.txt $COMINgdasprev/gdas.t${gcyc}z.atm.logf003.txt
+    ln -sf $COMINenkfgdasmemprev/enkfgdas.t${gcyc}z.atm.logf006.txt $COMINgdasprev/gdas.t${gcyc}z.atm.logf006.txt
+    ln -sf $COMINenkfgdasmemprev/enkfgdas.t${gcyc}z.atm.logf009.txt $COMINgdasprev/gdas.t${gcyc}z.atm.logf009.txt
+    ln -sf $COMINenkfgdasprev/enkfgdas.t${gcyc}z.atmf006.ensmean.nc $COMINgdasprev/gdas.t${gcyc}z.atmf006.nc
+    ln -sf $COMINenkfgdasprev/enkfgdas.t${gcyc}z.atmf009.ensmean.nc $COMINgdasprev/gdas.t${gcyc}z.atmf009.nc
     "${HOMEobsproc}/jobs/JOBSPROC_GLOBAL_PREP"
     status=$?
     [[ ${status} -ne 0 ]] && exit ${status}
