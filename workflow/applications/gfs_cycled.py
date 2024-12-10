@@ -290,10 +290,16 @@ class GFSCycledAppConfig(AppConfig):
         gfs_tasks += gdas_gfs_common_cleanup_tasks
 
         tasks = dict()
-        gdas_tasks.remove("anal")
+        if self.do_jediatmvar:
+            gdas_tasks.remove("atmanlinit")
+            gdas_tasks.remove("atmanlvar")
+            gdas_tasks.remove("atmanlfv3inc")
+            gdas_tasks.remove("atmanlfinal")
+        else:
+            gdas_tasks.remove("anal")
+            gdas_tasks.remove("analdiag")
         gdas_tasks.remove("sfcanl")
         gdas_tasks.remove("analcalc")
-        gdas_tasks.remove("analdiag")
         gdas_tasks.remove("fcst")
         gdas_tasks.remove("atmanlprod")
         gdas_tasks.remove("stage_ic")
@@ -301,6 +307,7 @@ class GFSCycledAppConfig(AppConfig):
         gdas_tasks.remove("atmos_prod")
         gdas_tasks.remove("atmanlupp")
         gdas_tasks.remove("cleanup")
+       
         tasks['gdas'] = gdas_tasks
 
         if self.do_hybvar and 'gdas' in self.eupd_runs:

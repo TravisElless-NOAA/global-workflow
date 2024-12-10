@@ -27,7 +27,7 @@ case ${step} in
     ;;
 
   "atmensanlsol")
-    export tasks_per_node=12
+    export tasks_per_node=8
     ;;
 
   "eupd")

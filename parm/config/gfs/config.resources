@@ -1097,7 +1097,7 @@ case ${step} in
     export layout_x=${layout_x_atmensanl}
     export layout_y=${layout_y_atmensanl}
 
-    walltime="00:30:00"
+    walltime="01:30:00"
     ntasks=$(( layout_x * layout_y * 6 ))
     threads_per_task=1
     tasks_per_node=$(( max_tasks_per_node / threads_per_task ))
