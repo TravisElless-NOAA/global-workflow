@@ -17,7 +17,7 @@ enkf_grp:
 
         # Only store the 6-hour surface forecast
         - "{{ COMIN_ATMOS_HISTORY_MEM | relpath(ROTDIR) }}/{{ head }}sfcf006.nc"
-        {% end if %}
+        {% endif %}
 
         # Store the individual member analysis data
         {% if not lobsdiag_forenkf %}
