@@ -23,6 +23,16 @@ YMD=${PDY} HH=${cyc} declare_from_tmpl -rx \
     COMOUT_ATMOS_ANALYSIS:COM_ATMOS_ANALYSIS_TMPL \
     COMOUT_CONF:COM_CONF_TMPL
 
+NMEM_ENS_MAX=${NMEM_ENS:-80}
+if [ "${RUN}" = "enkfgfs" ]; then
+   NMEM_ENS=${NMEM_ENS_GFS:-30}
+   ec_offset=${NMEM_ENS_GFS_OFFSET:-20}
+   mem_offset=$((ec_offset * cyc/6))
+else
+   NMEM_ENS=${NMEM_ENS:-80}
+   mem_offset=0
+fi
+
 for imem in $(seq 1 "${NMEM_ENS}"); do
     memchar="mem$(printf %03i "${imem}")"
     MEMDIR=${memchar} YMD=${PDY} HH=${cyc} declare_from_tmpl \
