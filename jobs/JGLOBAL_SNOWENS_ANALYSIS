@@ -13,13 +13,11 @@ export GDUMP
 CDUMP=${RUN/enkf}
 export CDUMP
 
-export NMEM_ENS_MAX=${NMEM_ENS:-80}
-if [ "${RUN}" = "enkfgfs" ]; then
-   NMEM_ENS=${NMEM_ENS_GFS:-30}
-   ec_offset=${NMEM_ENS_GFS_OFFSET:-20}
-   export mem_offset=$((ec_offset * cyc/6))
+export NMEM_ENS_MAX=${NMEM_ENS}
+if [[ "${RUN}" == "enkfgfs" ]]; then
+   NMEM_ENS=${NMEM_ENS_GFS}
+   export mem_offset=$((NMEM_ENS_GFS_OFFSET * cyc/6))
 else
-   NMEM_ENS=${NMEM_ENS:-80}
    export mem_offset=0
 fi
 ##############################################
