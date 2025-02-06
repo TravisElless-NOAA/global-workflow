@@ -18,10 +18,13 @@ case ${step} in
     ;;
 
   "atmensanlobs")
-    export tasks_per_node=48
-    export memory="400GB"
+    export tasks_per_node=12
     ;;
-  
+
+  "atmensanlsol")
+    export tasks_per_node=8
+    ;;
+
   *)
     ;;
 esac
