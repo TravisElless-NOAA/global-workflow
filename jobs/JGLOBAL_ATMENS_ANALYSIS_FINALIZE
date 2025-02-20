@@ -10,7 +10,12 @@ source "${HOMEgfs}/ush/jjob_header.sh" -e "atmensanlfinal" -c "base atmensanl at
 ##############################################
 GDUMP="gdas"
 GDUMP_ENS="enkf${GDUMP}"
+GDATE=$(${NDATE} -"${assim_freq}" "${PDY}${cyc}")
+# shellcheck disable=
+export gPDY=${GDATE:0:8}
+export gcyc=${GDATE:8:2}
 
+. "${HOMEgfs}/ush/load_ufsda_modules.sh"
 ##############################################
 # Begin JOB SPECIFIC work
 ##############################################
@@ -20,6 +25,9 @@ MEMDIR='ensstat' RUN=${GDUMP_ENS} YMD=${PDY} HH=${cyc} declare_from_tmpl -rx \
 
 mkdir -m 755 -p "${COM_ATMOS_ANALYSIS_ENS}"
 
+MEMDIR='ensstat' RUN=${GDUMP_ENS} YMD=${gPDY} HH=${gcyc} declare_from_tmpl -rx \
+    COM_ATMOS_ANALYSIS_ENS_PREV:COM_ATMOS_ANALYSIS_TMPL
+
 ###############################################################
 # Run relevant script
 
@@ -27,6 +35,12 @@ EXSCRIPT=${GDASATMENSFINALPY:-${SCRgfs}/exglobal_atmens_analysis_finalize.py}
 ${EXSCRIPT}
 status=$?
 [[ ${status} -ne 0 ]] && exit "${status}"
+
+cp ${COM_ATMOS_ANALYSIS_ENS_PREV}/gdas.t${gcyc}z.rad_varbc_params.tar ${COM_ATMOS_ANALYSIS_ENS}/gdas.t${cyc}z.rad_varbc_params.tar
+cp ${COM_ATMOS_ANALYSIS_ENS_PREV}/gdas.t${gcyc}z.atms_n20.satbias.nc ${COM_ATMOS_ANALYSIS_ENS}/gdas.t${cyc}z.atms_n20.satbias.nc
+cp ${COM_ATMOS_ANALYSIS_ENS_PREV}/gdas.t${gcyc}z.atms_n20.satbias_cov.nc ${COM_ATMOS_ANALYSIS_ENS}/gdas.t${cyc}z.atms_n20.satbias_cov.nc
+cp ${COM_ATMOS_ANALYSIS_ENS_PREV}/gdas.t${gcyc}z.atms_n20.tlapse.txt ${COM_ATMOS_ANALYSIS_ENS}/gdas.t${cyc}z.atms_n20.tlapse.txt
+
 
 ##############################################
 # End JOB SPECIFIC work
