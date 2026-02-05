@@ -19,7 +19,7 @@ case ${step} in
   ;;
   "anal")
     case ${CASE} in
-      "C768")
+      "C384" | "C768")
         export threads_per_task=8
         ;;
       "C1152")
