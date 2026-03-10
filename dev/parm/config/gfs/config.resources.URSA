@@ -21,6 +21,7 @@ case ${step} in
     case ${CASE} in
       "C384" | "C768")
         export threads_per_task=8
+	export ntasks=400
         ;;
       "C1152")
         export threads_per_task=16
