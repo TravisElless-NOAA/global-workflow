@@ -16,12 +16,10 @@
 #
 #   Arguments:
 #     start_time: start time of script (in seconds since epoch)
-#     rc:         exit code of the script [default: $?]
 #
 
 set +x
 start_time="${start_time:-${1}}"
-rc="${rc:-${2:-$?}}"
 
 # Execute any commands registered in POSTAMBLE_CMD
 #
@@ -42,5 +40,5 @@ _end_time_human=$(date -d@"${_end_time}" -u +%H:%M:%S)
 _elapsed_sec=$((_end_time - start_time))
 _elapsed=$(date -d@"${_elapsed_sec}" -u +%H:%M:%S)
 
-echo "End ${_calling_script:-script} at ${_end_time_human} with error code ${rc} (time elapsed: ${_elapsed})"
+echo "End ${_calling_script:-script} at ${_end_time_human} with error code ${err} (time elapsed: ${_elapsed})"
 exit "${rc}"
