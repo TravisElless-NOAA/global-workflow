@@ -41,4 +41,4 @@ _elapsed_sec=$((_end_time - start_time))
 _elapsed=$(date -d@"${_elapsed_sec}" -u +%H:%M:%S)
 
 echo "End ${_calling_script:-script} at ${_end_time_human} with error code ${err} (time elapsed: ${_elapsed})"
-exit "${rc}"
+exit "${err}"
