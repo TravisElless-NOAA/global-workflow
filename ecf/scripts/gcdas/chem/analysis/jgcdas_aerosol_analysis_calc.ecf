@@ -20,10 +20,10 @@ export RUN=%RUN%
 ############################################################
 # Load modules
 ############################################################
-module load craype/${craype_ver}
 module load intel/${intel_ver}
-module load cray-mpich/${cray_mpich_ver}
+module load craype/${craype_ver}
 module load cray-pals/${cray_pals_ver}
+module load cray-mpich/${cray_mpich_ver}
 module load cfp/${cfp_ver}
 module load libjpeg/${libjpeg_ver}
 module load hdf5-D/${hdf5D_ver}
