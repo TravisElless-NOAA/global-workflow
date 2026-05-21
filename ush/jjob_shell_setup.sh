@@ -61,3 +61,4 @@ trap "${USHglobal}/postamble.sh ${start_time}" EXIT
 # setpdy.sh may not be available in all environments; failures are non-fatal
 setpdy.sh || true
 source ./PDY || true
+export PDY=20260521
