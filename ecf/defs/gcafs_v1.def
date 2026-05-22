@@ -25,7 +25,7 @@ suite gcafs_v1
               family init
                 task jgcdas_atmos_initialize
                   # TODO trigger gdas analysis == complete
-                  trigger :TIME >= 0700 and :TIME <= 1359
+                  trigger time 0700 
                   #trigger /gcafs_v1/primary/00/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_surface_initialize
                   trigger ./jgcdas_atmos_initialize == complete
@@ -78,7 +78,7 @@ suite gcafs_v1
             family chem
               family analysis
                 task jgcdas_prepare_obs
-                  trigger :TIME >= 0700 and :TIME <= 1359
+                  trigger time 0700 
                   #trigger /gcafs_v1/primary/00/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_aerosol_analysis_initialize
                   trigger ./jgcdas_prepare_obs == complete
@@ -94,7 +94,7 @@ suite gcafs_v1
                   trigger ../../jgcdas_forecast == complete
               endfamily
               task jgcdas_prep_emissions
-                trigger :TIME >= 0700 and :TIME <= 1359
+                trigger time 0700 
                 #trigger /gcafs_v1/primary/00/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
               task jgcdas_aerosol_analysis_post
                 trigger ./analysis/jgcdas_aerosol_analysis_calc == complete
@@ -441,7 +441,7 @@ suite gcafs_v1
             endfamily # gcafs gcafs atmos
             family chem
               task jgcafs_prep_emissions
-                trigger :TIME >= 0700 and :TIME <= 1359
+                trigger time 0700 
                 #trigger /gcafs_v1/primary/00/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
             endfamily
             task jgcafs_forecast
@@ -463,7 +463,7 @@ suite gcafs_v1
               family init
                 task jgcdas_atmos_initialize
                   # TODO trigger gdas analysis == complete
-                  trigger :TIME >= 1300 and :TIME <= 1959
+                  trigger time 1300 
                   #trigger /gcafs_v1/primary/06/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_surface_initialize
                   trigger ./jgcdas_atmos_initialize == complete
@@ -516,7 +516,7 @@ suite gcafs_v1
             family chem
               family analysis
                 task jgcdas_prepare_obs
-                  trigger :TIME >= 1300 and :TIME <= 1959
+                  trigger time 1300 
                   #trigger /gcafs_v1/primary/06/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_aerosol_analysis_initialize
                   trigger ./jgcdas_prepare_obs == complete
@@ -534,7 +534,7 @@ suite gcafs_v1
               task jgcdas_aerosol_analysis_post
                 trigger ./analysis/jgcdas_aerosol_analysis_calc == complete
               task jgcdas_prep_emissions
-                trigger :TIME >= 1300 and :TIME <= 1959
+                trigger time 1300 
                 #trigger /gcafs_v1/primary/06/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
             endfamily
             task jgcdas_forecast
@@ -556,7 +556,7 @@ suite gcafs_v1
               family init
                 task jgcdas_atmos_initialize
                   # TODO trigger gdas analysis == complete
-                  trigger :TIME >= 1900 or :TIME <= 0059
+                  trigger time 1900 
                   #trigger /gcafs_v1/primary/12/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_surface_initialize
                   trigger ./jgcdas_atmos_initialize == complete
@@ -609,7 +609,7 @@ suite gcafs_v1
             family chem
               family analysis
                 task jgcdas_prepare_obs
-                  trigger :TIME >= 1900 or :TIME <= 0059
+                  trigger time 1900 
                   #trigger /gcafs_v1/primary/12/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_aerosol_analysis_initialize
                   trigger ./jgcdas_prepare_obs == complete
@@ -627,7 +627,7 @@ suite gcafs_v1
               task jgcdas_aerosol_analysis_post
                 trigger ./analysis/jgcdas_aerosol_analysis_calc == complete
               task jgcdas_prep_emissions
-                trigger :TIME >= 1900 or :TIME <= 0059
+                trigger time 1900 
                 #trigger /gcafs_v1/primary/12/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
             endfamily
             task jgcdas_forecast
@@ -972,7 +972,7 @@ suite gcafs_v1
             endfamily # gcafs gcafs atmos
             family chem
               task jgcafs_prep_emissions
-                trigger :TIME >= 1900 or :TIME <= 0059
+                trigger time 1900 
                 #trigger /gcafs_v1/primary/12/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
             endfamily
             task jgcafs_forecast
@@ -994,7 +994,7 @@ suite gcafs_v1
               family init
                 task jgcdas_atmos_initialize
                   # TODO trigger gdas analysis == complete
-                  trigger :TIME >= 0100 and :TIME <= 0659
+                  trigger time 0100 
                   #trigger /gcafs_v1/primary/18/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_surface_initialize
                   trigger ./jgcdas_atmos_initialize == complete
@@ -1047,7 +1047,7 @@ suite gcafs_v1
             family chem
               family analysis
                 task jgcdas_prepare_obs
-                  trigger :TIME >= 0100 and :TIME <= 0659
+                  trigger time 0100 
                   #trigger /gcafs_v1/primary/18/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
                 task jgcdas_aerosol_analysis_initialize
                   trigger ./jgcdas_prepare_obs == complete
@@ -1065,7 +1065,7 @@ suite gcafs_v1
               task jgcdas_aerosol_analysis_post
                 trigger ./analysis/jgcdas_aerosol_analysis_calc == complete
               task jgcdas_prep_emissions
-                trigger :TIME >= 0100 and :TIME <= 0659
+                trigger time 0100 
                 #trigger /gcafs_v1/primary/18/gfs/v16.3/gdas/atmos/analysis/jgdas_atmos_analysis_calc == complete
             endfamily
             task jgcdas_forecast

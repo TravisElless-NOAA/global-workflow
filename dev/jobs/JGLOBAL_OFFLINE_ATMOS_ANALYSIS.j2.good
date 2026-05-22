@@ -33,9 +33,9 @@ ROTDIR=$(compath.py "${envir}/${NET}/${gcafs_ver}")
 export ROTDIR
 
 #{% if RUN == "gcdas" %}
-COMINobsproc=$(compath.py "${envir}/obsproc/${obsproc_ver}")/"gdas.${PDY}/${cyc}/atmos"
+envir="prod" COMINobsproc=$(compath.py "${envir}/obsproc/${obsproc_ver}")/"gdas.${PDY}/${cyc}/atmos"
 declare -rx COMINobsproc
-COMINgfs=$(compath.py "${envir}/gfs/${gfs_ver}")
+envir="prod" COMINgfs=$(compath.py "${envir}/gfs/${gfs_ver}")
 declare -rx COMINgfs
 #{% else %}
 declare -rx COMINobsproc="${DMPDIR}/gdas.${PDY}/${cyc}/atmos"
