@@ -1,5 +1,7 @@
 #!/bin/bash
 set -x
+set -u -o pipefail
+shopt -s nullglob
 
 # File Service Manager (FSM) for Global Workfow
 # WGF (Workflow Group Family Assignment) - atmos, ocean
