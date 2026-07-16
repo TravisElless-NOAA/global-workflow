@@ -32,6 +32,7 @@ export TANK_TROPCY=${TANK_TROPCY:-${DCOMROOT}} # path to tropical cyclone record
 ##############################################
 # Define COM directories
 ##############################################
+export COMINsyn=${COMINsyn:-$(compath.py "${envir}/com/gfs/${gfs_ver}")/syndat}
 declare -rx COMOUT_OBS="${ROTDIR}/${RUN}.${PDY}/${cyc}/obs"
 mkdir -p "${COMOUT_OBS}"
 
