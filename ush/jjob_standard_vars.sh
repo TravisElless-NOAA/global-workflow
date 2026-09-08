@@ -12,8 +12,6 @@
 #
 # Variables set here:
 #   PS4                                         (debug trace format)
-#   USHglobal, FIXglobal, PARMglobal,
-#     SCRIPTSglobal                             (global directory paths)
 #   pid, pgmout, pgmerr                        (job output variables)
 #   envir, KEEPDATA, SENDECF, SENDDBN,
 #     SENDDBN_NTC, DBNROOT                      (run environment and control)
@@ -39,26 +37,6 @@ echo "Begin ${_calling_script} at ${_start_time_human}"
 # Debug trace format
 ##############################################
 declare -x PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LINENO}] ${SECONDS}s: '
-
-##############################################
-# Standard global directory paths
-##############################################
-export USHglobal="${HOMEglobal}/ush"
-export FIXglobal="${HOMEglobal}/fix"
-export PARMglobal="${HOMEglobal}/parm"
-export SCRglobal="${HOMEglobal}/scripts"
-
-#############################################
-# Component Fix directory paths
-#############################################
-export FIXam="${FIXglobal}/am"
-export FIXaer="${FIXglobal}/aer"
-export FIXcpl="${FIXglobal}/cpl"
-export FIXlut="${FIXglobal}/lut"
-export FIXcice="${FIXglobal}/cice"
-export FIXmom="${FIXglobal}/mom6"
-export FIXreg2grb2="${FIXglobal}/reg2grb2"
-export FIXgdas="${FIXglobal}/gdas"
 
 ##############################################
 # Job output variables

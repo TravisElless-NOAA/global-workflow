@@ -11,6 +11,22 @@ export machine="WCOSS2"
 # Do not run strict mode (set -e) for production
 export STRICT="NO"
 
+# Global directory paths
+export EXECglobal="${HOMEglobal}/exec"
+export FIXglobal="${HOMEglobal}/fix"
+export PARMglobal="${HOMEglobal}/parm"
+export SCRglobal="${HOMEglobal}/scripts"
+export USHglobal="${HOMEglobal}/ush"
+
+export FIXam="${FIXglobal}/am"
+export FIXaer="${FIXglobal}/aer"
+export FIXcpl="${FIXglobal}/cpl"
+export FIXlut="${FIXglobal}/lut"
+export FIXcice="${FIXglobal}/cice"
+export FIXmom="${FIXglobal}/mom6"
+export FIXreg2grb2="${FIXglobal}/reg2grb2"
+export FIXgdas="${FIXglobal}/gdas"
+
 # This block might be needed for development archiving but not for production
 export DO_BUFRSND="YES"         # BUFR sounding products
 export DO_GEMPAK="YES"           # GEMPAK products
