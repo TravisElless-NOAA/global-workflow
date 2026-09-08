@@ -129,9 +129,6 @@ esac
 case "${APP}" in
   ATM)
     ;;
-  ATMA)
-    DO_AERO="YES"
-    ;;
   ATMW)
     export DO_COUPLED="YES"
     export DO_WAVE="YES"
