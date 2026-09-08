@@ -10,15 +10,6 @@ export machine="WCOSS2"
 
 # Do not run strict mode (set -e) for production
 export STRICT="NO"
-# Component FIX directories
-export FIXam="${FIXglobal}/am"
-export FIXaer="${FIXglobal}/aer"
-export FIXcpl="${FIXglobal}/cpl"
-export FIXlut="${FIXglobal}/lut"
-export FIXcice="${FIXglobal}/cice"
-export FIXmom="${FIXglobal}/mom6"
-export FIXreg2grb2="${FIXglobal}/reg2grb2"
-export FIXgdas="${FIXglobal}/gdas"
 
 # This block might be needed for development archiving but not for production
 export DO_BUFRSND="YES"         # BUFR sounding products

@@ -46,7 +46,19 @@ declare -x PS4='+ $(basename ${BASH_SOURCE[0]:-${FUNCNAME[0]:-"Unknown"}})[${LIN
 export USHglobal="${HOMEglobal}/ush"
 export FIXglobal="${HOMEglobal}/fix"
 export PARMglobal="${HOMEglobal}/parm"
-export SCRIPTSglobal="${HOMEglobal}/scripts"
+export SCRglobal="${HOMEglobal}/scripts"
+
+#############################################
+# Component Fix directory paths
+#############################################
+export FIXam="${FIXglobal}/am"
+export FIXaer="${FIXglobal}/aer"
+export FIXcpl="${FIXglobal}/cpl"
+export FIXlut="${FIXglobal}/lut"
+export FIXcice="${FIXglobal}/cice"
+export FIXmom="${FIXglobal}/mom6"
+export FIXreg2grb2="${FIXglobal}/reg2grb2"
+export FIXgdas="${FIXglobal}/gdas"
 
 ##############################################
 # Job output variables
