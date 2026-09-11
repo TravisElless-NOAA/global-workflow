@@ -46,7 +46,9 @@ else
 fi
 
 # Check if we are running a supported launcher
-if [[ "${_mpmd_launcher}" == "srun" || "${_mpmd_launcher}" == "mpiexec" ]]; then
+if [[ "${_mpmd_launcher}" == "unsupported" ]]; then
+    USE_CFP="NO"
+else
     echo "INFO: Detected launcher '${_mpmd_launcher}', will attempt to run in MPMD mode if USE_CFP is set to YES"
     if [[ -z "${max_tasks_per_node:-}" || -z "${ntasks:-}" ]]; then
         echo "WARNING: max_tasks_per_node and/or ntasks is not set, disabling MPMD mode."
@@ -55,8 +57,6 @@ if [[ "${_mpmd_launcher}" == "srun" || "${_mpmd_launcher}" == "mpiexec" ]]; then
         USE_CFP=${USE_CFP:-"NO"}
         max_tasks_per_node=$((ntasks < max_tasks_per_node ? ntasks : max_tasks_per_node))
     fi
-else
-    USE_CFP="NO"
 fi
 
 # If USE_CFP is not set or is not YES, run in serial mode
@@ -69,12 +69,30 @@ if [[ "${USE_CFP}" != "YES" ]]; then
     exit "${rc}"
 fi
 
+# the Derecho mpiexec implementations does not respect stdout redirection,
+# so make a wrapper script.
+if [[ "${machine}" == "DERECHO" ]]; then
+    wrapper_script="stdout_wrapper.sh"
+    rm -f "${wrapper_script}"
+    cat << 'EOF' > "${wrapper_script}"
+#! /usr/bin/bash
+# Run the rest of the args and redirect stdout and stderr to the
+# file named by the last argument
+${@: 1:$#-1} > ${@: -1} 2>&1
+exit $?
+EOF
+    chmod 755 "${wrapper_script}"
+fi
+
 # Set OMP_NUM_THREADS to 1 to avoid oversubscription when doing MPMD
 export OMP_NUM_THREADS=1
 
 # Establish the MPMD chunk file pattern.
 mpmd_cmdfile="${DATA:-}/mpmd_cmdfile"
 rm -f "${mpmd_cmdfile}"*
+
+# Get the starting timestamp for the log/command output directory.
+timestamp=$(date +%Y%m%d_%H%M%S)
 
 # Functions to support MPMD execution
 chunk_mpmd() {
@@ -118,7 +136,13 @@ chunk_mpmd() {
             if [[ "${_mpmd_launcher}" == "srun" ]]; then
                 echo "${i} ${line}" >> "${chunk_file}"
             elif [[ "${_mpmd_launcher}" == "mpiexec" ]]; then
-                echo "${line} > mpmd.${i}.out 2>&1" >> "${chunk_file}"
+                # The MPMD implemtation is different between WCOSS and Derecho, but both
+                # use mpiexec
+                if [[ "${machine}" == "DERECHO" ]]; then
+                    echo "-n 1 ${wrapper_script} ${line} mpmd.${i}.out" >> "${chunk_file}"
+                else
+                    echo "${line} > mpmd.${i}.out 2>&1" >> "${chunk_file}"
+                fi
             fi
             err=$?
             if [[ ${err} -ne 0 ]]; then
@@ -132,30 +156,46 @@ chunk_mpmd() {
     return 0
 }
 
-cat_outputs() {
-    # This function concatenates the output files from the MPMD job and prints them to stdout.
-    # It also removes the individual output files after concatenation.
+move_outputs() {
+    # This function makes an after-run directory (mpmd_<timestamp>) and moves the run scripts
+    # and outputs to this directory.
+    # Usage: move_outputs chunk_num
 
-    # Optional argument to issue error if no output files are found.
-    _err_on_empty="${1:-false}"
-    out_files=$(find . -name 'mpmd.*.out')
-    if [[ -z "${out_files}" ]]; then
-        if [[ "${_err_on_empty}" == "true" ]]; then
-            echo "ERROR: No output files found for MPMD job"
-            return 1
-        else
-            # Nothing to do, return success.
-            return 0
-        fi
+    if [[ $# -ne 1 ]]; then
+        echo "ERROR: move_outputs function requires 1 argument: the chunk number."
+        return 1
     fi
-    for file in ${out_files}; do
-        {
-            echo "BEGIN OUTPUT FROM ${file}"
-            cat "${file}"
-            echo "END OUTPUT FROM ${file}"
-        } >> mpmd.out
-        rm -f "${file}"
-    done
+
+    local chunk_num="${1}"
+
+    # Only find the output files for this chunk, which should be named mpmd.*.out
+    out_files=$(find "${DATA:-}" -maxdepth 1 -type f -name "mpmd.*.out" -print)
+    if [[ -z "${out_files}" ]]; then
+        # Nothing to do, raise a warning and exit successfully
+        echo "WARNING: No output files found from MPMD jobs."
+        return 0
+    fi
+
+    echo "INFO: Moving MPMD output files for chunk ${chunk_num} to after-run directory."
+
+    after_run_dir="mpmd_${timestamp}_chunk${chunk_num}"
+    mkdir -p "${after_run_dir}"
+
+    # Write logs back to stdout if requested.
+    if [[ "${CAT_MPMD_LOGS:-NO}" == "YES" ]]; then
+        for out_file in ${out_files}; do
+            echo "INFO: Contents of ${out_file}:"
+            cat "${out_file}"
+        done
+    fi
+
+    # shellcheck disable=SC2086
+    mv -f ${out_files} "${after_run_dir}/"
+
+    mv -f "${mpmd_cmdfile}.chunk${chunk_num}" "${after_run_dir}/"
+
+    # Always copy the cmdfile to the after_run_dir for reference.
+    cp "${cmdfile}" "${after_run_dir}/"
 }
 
 cat << EOF
@@ -176,6 +216,7 @@ if [[ ${nm} -gt ${max_tasks_per_node:-1} ]]; then
     echo "INFO: Number of MPMD tasks (${nm}) is greater than the maximum tasks per node (${max_tasks_per_node:-1})."
     echo "      Running MPMD job in chunks of ${max_tasks_per_node:-1} tasks per node."
     chunk_size=${max_tasks_per_node:-1}
+    # Calculate the number of chunks needed (ceil (nm / chunk_size))
 else
     # Otherwise, we can run all MPMD tasks in one chunk.
     chunk_size=${nm}
@@ -196,40 +237,29 @@ for ((i = 0; i < nm; i += chunk_size)); do
     # Count the number of lines not including commented lines (i.e. shebangs)
     n_mpmd_tasks=$(grep -v -c "^ *#" < "${chunk_file}")
     if [[ "${_mpmd_launcher}" == "srun" ]]; then
-        unset_strict
+        source "${USHglobal}/unset_strict.sh"
         # shellcheck disable=SC2086
         ${launcher:-} ${mpmd_opt:-} -n "${n_mpmd_tasks}" "${chunk_file}"
-        set_strict
+        source "${USHglobal}/set_strict.sh"
     elif [[ "${_mpmd_launcher}" == "mpiexec" ]]; then
-        # shellcheck disable=SC2086
-        ${launcher:-} -np "${n_mpmd_tasks}" ${mpmd_opt:-} "${chunk_file}"
+        # The MPMD implemtation is different between WCOSS and Derecho, but both
+        # use mpiexec
+        if [[ "${machine}" == "DERECHO" ]]; then
+            # shellcheck disable=SC2086
+            ${launcher:-} ${mpmd_opt:-} "${chunk_file}"
+        else
+            # shellcheck disable=SC2086
+            ${launcher:-} -np "${n_mpmd_tasks}" ${mpmd_opt:-} "${chunk_file}"
+        fi
     fi
     err=$?
     if [[ ${err} -ne 0 ]]; then
         echo "ERROR: MPMD job failed for ${chunk_file}"
         break
     fi
-    # Call cat_outputs and error if no outputs are found.
-    cat_outputs "true"
-    err=$?
-    if [[ ${err} -ne 0 ]]; then
-        echo "ERROR: No output files found for MPMD job for chunk file '${chunk_file}'"
-        break
-    fi
+    # Move just the log files for this chunk.
+    move_outputs "${chunk_num}"
     ((chunk_num = chunk_num + 1))
 done
-
-# On success remove the command file and any chunk files.
-if [[ ${err} -eq 0 ]]; then
-    rm -f "${mpmd_cmdfile}.chunk"*
-fi
-
-# Concatenate any remaining output files if they exist
-cat_outputs
-if [[ -s mpmd.out ]]; then
-    cat mpmd.out
-else
-    echo "WARNING: No output files found for MPMD job"
-fi
 
 exit "${err}"

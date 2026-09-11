@@ -1,6 +1,18 @@
 #! /usr/bin/env bash
+set -x
 
 source "${HOMEglobal}/ush/jjob_header.sh" -e "oceanice_products" -c "base oceanice_products"
+
+#{% if false %}
+source "${HOMEglobal}/ush/jjob_standard_vars.sh"
+#{% else %}
+#{% include jjob_var_setup.j2 %}
+#{% endif %}
+
+source "${USHglobal}/jjob_shell_setup.sh"
+# Set strict mode which will exit on error or undefined variable
+# and exit on error in a pipeline (e.g. if a command in "cmd | cmd2" fails)
+source "${USHglobal}/set_strict.sh"
 
 # Setup Python path for pygfs
 PYTHONPATH="${HOMEglobal}/ush/python${PYTHONPATH:+:${PYTHONPATH}}"
@@ -38,7 +50,7 @@ fi
 "${SCRglobal}/exglobal_oceanice_products.py" && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to generate ${COMPONENT} products."
 fi
 
 ##############################################

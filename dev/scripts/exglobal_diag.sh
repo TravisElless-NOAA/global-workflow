@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 ################################################################################
 ####  UNIX Script Documentation Block
@@ -16,6 +17,10 @@
 #   Language: POSIX shell
 #
 ################################################################################
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 #  Set environment.
 cd "${DATA}" || exit 8
@@ -196,6 +201,7 @@ for partfile in ${cmdfile_parts}; do
     "${USHglobal}/run_mpmd.sh" "${partfile}" && true
     export err=$?
     if [[ ${err} -ne 0 ]]; then
+        pgm="run_mpmd.sh"
         err_exit "Failed to create one or more observation diagnostic files for ${partfile}!"
     fi
 done
@@ -226,8 +232,12 @@ if [[ "${DIAG_TARBALL}" == "YES" ]]; then
             tar "${TAROPTS}" "${diagfile[n]}" -T "${diaglist[n]}"
             export err=$?
             if [[ ${err} -ne 0 ]]; then
+                pgm=tar
                 err_exit "Unable to create ${diagfile[n]}!"
             fi
+        else
+            echo "WARNING: No diagnostic files found for type ${n} = ${diaglist[n]#list}"
+            echo "WARNING: Unable to create ${diagfile[n]}"
         fi
     done
     echo "END tar diagnostic files"
@@ -249,5 +259,15 @@ fi
 
 ################################################################################
 # Postprocessing
+
+# Remove the shared temporary gsidiags staging directory now that the
+# diagnostic tarballs have been written, unless retention is requested.
+keepdata="${KEEPDATA:-NO}"
+keep_temp_diags="${KEEP_TEMP_DIAGS:-NO}"
+if [[ "${keepdata^^}" == "YES" || "${keep_temp_diags^^}" == "YES" ]]; then
+    echo "INFO: retaining gsidiags directory ${GSIDIAGDIR}"
+else
+    rm -rf "${GSIDIAGDIR}"
+fi
 
 exit 0

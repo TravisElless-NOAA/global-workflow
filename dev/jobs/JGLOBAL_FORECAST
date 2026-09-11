@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 # shellcheck disable=SC2309
 if [[ 10#${ENSMEM:--1} -ge 0 ]]; then
@@ -10,6 +11,21 @@ else
     export DATA="${DATAjob}/${jobid}"
     source "${HOMEglobal}/ush/jjob_header.sh" -e "fcst" -c "base fcst"
 fi
+
+#{# ***NOTE: lines starting with #{ are Jinja templating and will be ignored by Bash.***
+#{% if false %}
+# When running the workflow in development, source jjob_standard_vars.sh #}
+source "${HOMEglobal}/ush/jjob_standard_vars.sh"
+#{% else %}
+#{# When rendered for operations, place the contents of jjob_var_setup.j2 here #}
+#{# Note that the first line of jjob_var_setup.j2 will be commented #}
+#{% include jjob_var_setup.j2 %}
+#{% endif %}
+
+source "${USHglobal}/jjob_shell_setup.sh"
+# Set strict mode which will exit on error or undefined variable
+# and exit on error in a pipeline (e.g. if a command in "cmd | cmd2" fails)
+source "${USHglobal}/set_strict.sh"
 
 # Setup Python path for pygfs
 PYTHONPATH="${HOMEglobal}/ush/python${PYTHONPATH:+:${PYTHONPATH}}"
@@ -71,7 +87,7 @@ else
 fi
 
 if [[ "${DO_WAVE}" == "YES" ]]; then
-    declare -rx COMIN_WAVE_PREP="${COMIN}/model/wave/prep"
+    declare -rx COMIN_WAVE_INIT="${COMIN}/model/wave/init"
     declare -rx COMOUT_WAVE_RESTART="${COMOUT}/model/wave/restart"
     declare -rx COMOUT_WAVE_HISTORY="${COMOUT}/model/wave/history"
     declare -rx COMIN_WAVE_RESTART_PREV="${COMIN_RESTART_PREV}/model/wave/restart"
@@ -79,7 +95,6 @@ fi
 
 if [[ "${DO_OCN}" == "YES" ]]; then
     declare -rx COMIN_OCEAN_ANALYSIS="${COMIN}/analysis/ocean"
-    declare -rx COMIN_OCEAN_INPUT="${COMIN}/model/ocean/input"
     declare -rx COMOUT_MED_RESTART="${COMOUT}/model/med/restart"
     declare -rx COMOUT_OCEAN_RESTART="${COMOUT}/model/ocean/restart"
     declare -rx COMOUT_OCEAN_HISTORY="${COMOUT}/model/ocean/history"
@@ -88,7 +103,6 @@ if [[ "${DO_OCN}" == "YES" ]]; then
 fi
 
 if [[ "${DO_ICE}" == "YES" ]]; then
-    declare -rx COMIN_ICE_INPUT="${COMIN}/model/ice/input"
     declare -rx COMIN_ICE_ANALYSIS="${COMIN}/analysis/ice"
     declare -rx COMOUT_ICE_RESTART="${COMOUT}/model/ice/restart"
     declare -rx COMOUT_ICE_HISTORY="${COMOUT}/model/ice/history"
@@ -108,13 +122,13 @@ fi
 "${FORECASTSH}" && true # The && true prevents the shell from exiting when set -e
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to run the ${RUN} forecast for ${PDY}${cyc}"
 fi
 
 # Send DBN alerts for EnKF
 # TODO: Should these be in post manager instead?
 if [[ "${RUN}" =~ "enkf" ]] && [[ "${SENDDBN:-}" == YES ]]; then
-    for ((fhr == FHOUT; fhr <= FHMAX; fhr + FHOUT)); do
+    for ((fhr = FHOUT; fhr <= FHMAX; fhr = fhr + FHOUT)); do
         if ((fhr % 3 == 0)); then
             fhr3=$(printf %03i "${fhr}")
             "${DBNROOT}/bin/dbn_alert" MODEL GFS_ENKF "${job}" "${COMOUT_ATMOS_HISTORY}/${RUN}.t${cyc}z.sfc.f${fhr3}.nc"

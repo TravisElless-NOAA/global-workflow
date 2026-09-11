@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 #####################################################################
 # echo "-----------------------------------------------------"
@@ -6,6 +7,10 @@
 # echo " Jan 2008 - Chuang - Produces 1x1 degree special Grib from master."
 # echo "-----------------------------------------------------"
 #####################################################################
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 cd "${DATA}" || exit 2
 
@@ -51,34 +56,32 @@ export SLEEP_INT=${SLEEP_TIME:-5}
 
 SLEEP_LOOP_MAX=$((SLEEP_TIME / SLEEP_INT))
 
-# TODO: Does this section do anything? I retained if for clarity of
-# changes/updates, but it does not appear to do anything.
+##############################################################################
+# Specify Forecast Hour Range F000 - F024 for GFS_NPOESS_PGRB2_0P5DEG
+##############################################################################
+export SHOUR=0
 
 ####################################
 # Check if this is a restart
 ####################################
-if [[ -f "${COMOUT_ATMOS_GOES}/${RUN}.t${cyc}z.control.goessimpgrb2" ]]; then
+if [[ -f "${COMOUT_ATMOS_GOES}/${RUN}.t${cyc}z.control.goessimpgrb" ]]; then
     modelrecvy=$(cat < "${COMOUT_ATMOS_GOES}/${RUN}.t${cyc}z.control.goessimpgrb")
     recvy_cyc="${modelrecvy:8:2}"
     recvy_shour="${modelrecvy:10:13}"
 
-    if [[ ${RERUN} == "NO" ]]; then
-        NEW_SHOUR=$((recvy_shour + FHINC))
-        if ((NEW_SHOUR >= SHOUR)); then
+    if [[ ${RERUN:-NO} == "NO" ]]; then
+        NEW_SHOUR=$((recvy_shour + FHOUT_GOES))
+        if ((NEW_SHOUR > SHOUR)); then
             export SHOUR="${NEW_SHOUR}"
         fi
-        if ((recvy_shour >= FHOUR)); then
-            echo "Forecast Pgrb Generation Already Completed to ${FHOUR}"
+        if ((recvy_shour >= FHMAX_GOES)); then
+            echo "Forecast Pgrb Generation Already Completed to ${FHMAX_GOES}"
         else
             echo "Starting: PDY=${PDY} cycle=t${recvy_cyc}z SHOUR=${SHOUR}"
         fi
     fi
 fi
 
-##############################################################################
-# Specify Forecast Hour Range F000 - F024 for GFS_NPOESS_PGRB2_0P5DEG
-##############################################################################
-export SHOUR=0
 export FHOUR=24
 export FHINC=3
 if ((FHOUR > FHMAX_GFS)); then
@@ -113,6 +116,7 @@ for ((fhr = SHOUR; fhr <= FHOUR; fhr = fhr + FHINC)); do
     ${WGRIB2} tmpfile | grep -F -f "${paramlist}" | ${WGRIB2} -i -grib pgb2file tmpfile && true
     export err=$?
     if [[ ${err} -ne 0 ]]; then
+        pgm="$(basename "${WGRIB2}")"
         err_exit "FATAL ERROR: Failed to write pgb2file from the specified parm file \"${paramlist}\"!"
     fi
 
@@ -124,15 +128,21 @@ for ((fhr = SHOUR; fhr <= FHOUR; fhr = fhr + FHINC)); do
     else
         echo "File ${RUN}.${cycle}.pgrb2f${fhr3}.npoess not posted to db_net."
     fi
+
     echo "${PDY}${cyc}${fhr3}" > "${COMOUT_ATMOS_GOES}/${RUN}.t${cyc}z.control.halfdeg.npoess"
     rm -f tmpfile pgb2file
 
 done
 
+# Restore default pgm after override
+pgm=$(basename "${BASH_SOURCE[0]}")
+
 ################################################################
 # Specify Forecast Hour Range F000 - F180 for GOESSIMPGRB files
 ################################################################
-export SHOUR=${FHMIN_GFS}
+if ((FHMIN_GFS > SHOUR)); then
+    export SHOUR=${FHMIN_GFS}
+fi
 export FHOUR=${FHMAX_GOES}
 export FHINC=${FHOUT_GOES}
 
@@ -149,7 +159,6 @@ for ((fhr = SHOUR; fhr <= FHOUR; fhr = fhr + FHINC)); do
     # existence of the restart files
     ###############################
     export pgm="postcheck"
-    # grib_file="${COMIN_ATMOS_MASTER}/${RUN}.t${cyc}z.goesmasterf${fhr3}.grb2"
     grib_file="${COMIN_ATMOS_MASTER}/${RUN}.t${cyc}z.master-goes.f${fhr3}.grib2"
     if ! wait_for_file "${grib_file}" "${SLEEP_INT}" "${SLEEP_LOOP_MAX}"; then
         export err=9
@@ -176,15 +185,6 @@ for ((fhr = SHOUR; fhr <= FHOUR; fhr = fhr + FHINC)); do
     cpfs pgb2ifile "${COMOUT_ATMOS_GOES}/${RUN}.${cycle}.goessimpgrb2.0p25.f${fhr3}.idx"
     cpfs pgb2file2 "${COMOUT_ATMOS_GOES}/${RUN}.${cycle}.goessimpgrb2f${fhr3}.grd221"
 
-    if [[ ${SENDDBN} == "YES" ]]; then
-        "${DBNROOT}/bin/dbn_alert" MODEL GFS_GOESSIMPGB2_0P25 "${job}" \
-            "${COMOUT_ATMOS_GOES}/${RUN}.${cycle}.goessimpgrb2.0p25.f${fhr}"
-        "${DBNROOT}/bin/dbn_alert" MODEL GFS_GOESSIMPGB2_0P25_WIDX "${job}" \
-            "${COMOUT_ATMOS_GOES}/${RUN}.${cycle}.goessimpgrb2.0p25.f${fhr}.idx"
-        "${DBNROOT}/bin/dbn_alert" MODEL GFS_GOESSIMGRD221_PGB2 "${job}" \
-            "${COMOUT_ATMOS_GOES}/${RUN}.${cycle}.goessimpgrb2f${fhr}.grd221"
-    fi
-
     echo "${PDY}${cyc}${fhr}" > "${COMOUT_ATMOS_GOES}/${RUN}.t${cyc}z.control.goessimpgrb"
     rm -f pgb2file2 pgb2ifile
 
@@ -194,5 +194,8 @@ for ((fhr = SHOUR; fhr <= FHOUR; fhr = fhr + FHINC)); do
     fi
 
 done
+
+# Restore default pgm after prep_step override
+pgm=$(basename "${BASH_SOURCE[0]}")
 
 ################## END OF SCRIPT #######################

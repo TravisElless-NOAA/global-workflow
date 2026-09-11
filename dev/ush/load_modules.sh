@@ -73,7 +73,10 @@ case "${MODULE_TYPE}" in
             echo "FATAL ERROR: Failed to load ufs_${MACHINE_ID}.intel"
             exit 1
         fi
-        module load prod_util
+        # Do not load prod_util on an ecflow system
+        if [[ -z "${ECF_JOB:-}" ]]; then
+            module load prod_util
+        fi
         if [[ "${MACHINE_ID}" == "wcoss2" ]]; then
             module load cray-pals
             module load cfp
@@ -98,7 +101,7 @@ case "${MODULE_TYPE}" in
         module use "${HOMEglobal}/sorc/gdas.cd/modulefiles"
 
         case "${MACHINE_ID}" in
-            "hera" | "orion" | "hercules" | "wcoss2" | "gaeac6" | "ursa" | "noaacloud")
+            "hera" | "orion" | "hercules" | "wcoss2" | "gaeac6" | "ursa" | "derecho" | "aws-ec2" | "noaacloud")
                 #TODO: Remove LMOD_TMOD_FIND_FIRST line when spack-stack on WCOSS2
                 if [[ "${MACHINE_ID}" == "wcoss2" ]]; then
                     export LMOD_TMOD_FIND_FIRST=yes
@@ -127,10 +130,7 @@ case "${MODULE_TYPE}" in
 
         module list
 
-        ftype=$(type -t set_trace || echo "")
-        if [[ "${ftype}" == "function" ]]; then
-            set_trace
-        elif [[ "${set_x}" == "YES" ]]; then
+        if [[ "${set_x}" == "YES" ]]; then
             set -x
         fi
 
@@ -155,13 +155,34 @@ case "${MODULE_TYPE}" in
         export PYTHONPATH
         ;;
 
-    "run" | "gsi" | "verif" | "setup" | "upp")
+    "verif")
+        # EMC_verif-global modules -- use that submodule's module files
+        if [[ "${MACHINE_ID}" == "wcoss2" ]]; then
+            source "${HOMEglobal}/sorc/verif-global.fd/versions/run.ver"
+        fi
+        module use "${HOMEglobal}/sorc/verif-global.fd/modulefiles"
+        module load "emc_verif_global_${MACHINE_ID}"
+        export err=$?
+        if [[ ${err} -ne 0 ]]; then
+            echo "FATAL ERROR: Failed to load emc_verif_global_${MACHINE_ID}"
+            exit 1
+        fi
+        module list
+
+        ;;
+
+    "run" | "gsi" | "setup" | "upp")
 
         # Test that the version file exists
         if [[ ! -f "${HOMEglobal}/versions/run.ver" ]]; then
             echo "FATAL ERROR: ${HOMEglobal}/versions/run.ver does not exist!"
             echo "HINT: Run link_workflow.sh first."
-            exit 1
+            # Exit with 0 if loading setup modules (so the user's terminal doesn't close), else with 1
+            if [[ "${MODULE_TYPE}" == "setup" ]]; then
+                exit 0
+            else
+                exit 1
+            fi
         fi
 
         # Load our modules:
@@ -181,8 +202,8 @@ case "${MODULE_TYPE}" in
             mod_type="${MODULE_TYPE}"
         fi
 
-        # Source versions file (except for upp)
-        if [[ "${mod_type}" != "upp" ]]; then
+        # Source versions file (except for upp and verification)
+        if [[ "${mod_type}" != "upp" && "${mod_type}" != "verif" ]]; then
             source "${HOMEglobal}/versions/run.ver"
         fi
 
@@ -200,11 +221,7 @@ case "${MODULE_TYPE}" in
 
         module list
 
-        # If this function exists in the environment, run it; else set -x if it was set on entering this script
-        ftype=$(type -t set_trace || echo "")
-        if [[ "${ftype}" == "function" ]]; then
-            set_trace
-        elif [[ "${set_x}" == "YES" ]]; then
+        if [[ "${set_x}" == "YES" ]]; then
             set -x
         fi
         ;;

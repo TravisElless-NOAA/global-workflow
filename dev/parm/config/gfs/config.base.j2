@@ -11,17 +11,23 @@ export machine="{{ MACHINE }}"
 # EMC parallel or NCO production
 export RUN_ENVIR="emc"
 
+# Do not run strict mode (set -e) for production
+export STRICT="NO"
+
 # Account, queue, etc.
 export ACCOUNT="{{ ACCOUNT }}"
 export QUEUE="{{ QUEUE }}"
 export QUEUE_SERVICE="{{ QUEUE_SERVICE | default('${QUEUE}') }}"
+export QUEUE_EXCLUSIVE="{{ QUEUE_EXCLUSIVE | default('${QUEUE}') }}"
 export QUEUE_DTN="{{ QUEUE_DTN | default('${QUEUE_SERVICE}') }}"
 export PARTITION_BATCH="{{ PARTITION_BATCH }}"
 export PARTITION_SERVICE="{{ PARTITION_SERVICE | default() }}"
+export PARTITION_EXCLUSIVE="{{ PARTITION_EXCLUSIVE | default() }}"
 export PARTITION_DTN="{{ PARTITION_DTN | default() }}"
 export RESERVATION="{{ RESERVATION | default() }}"
 export CLUSTERS="{{ CLUSTERS | default() }}"
 export CLUSTERS_SERVICE="{{ CLUSTERS_SERVICE | default('${CLUSTERS}') }}"
+export CLUSTERS_EXCLUSIVE="{{ CLUSTERS_EXCLUSIVE | default('${CLUSTERS}') }}"
 export CLUSTERS_DTN="{{ CLUSTERS_DTN | default('${CLUSTERS_SERVICE}') }}"
 
 # Project to use in mass store:
@@ -49,6 +55,8 @@ export FIXgdas="${FIXglobal}/gdas"
 # GLOBAL static environment parameters
 export PACKAGEROOT="{{ PACKAGEROOT }}"    # TODO: set via prod_envir in Ops
 export COMROOT="{{ COMROOT }}"    # TODO: set via prod_envir in Ops
+# Available for WCOSS2/realtime only
+export DCOMROOT="/lfs/h1/ops/prod/dcom"    # TODO: set via prod_envir in ops
 export COMINsyn="{{ COMINsyn }}"
 export DMPDIR="{{ DMPDIR }}"
 export IODADIR="{{ IODADIR }}"
@@ -56,9 +64,7 @@ export USE_IODADIR="{{ USE_IODADIR }}"
 
 # Gempak from external models
 # Default locations are to dummy locations for testing
-export COMINecmwf="{{ COMINecmwf }}"
 export COMINnam="{{ COMINnam }}"
-export COMINukmet="{{ COMINukmet }}"
 
 # USER specific paths
 export HOMEDIR="{{ HOMEDIR }}"
@@ -87,7 +93,8 @@ export DO_GENESIS_FSU="{{ DO_GENESIS_FSU }}" # Cyclone genesis verification (FSU
 export DO_VERFOZN="YES"                  # Ozone data assimilation monitoring
 export DO_VERFRAD="YES"                  # Radiance data assimilation monitoring
 export DO_VMINMON="YES"                  # GSI minimization monitoring
-export DO_ANLSTAT="YES"                  # JEDI-based analysis statistics
+export DO_ANLSTAT="NO"                   # JEDI-based analysis statistics
+export DO_GSI_ANLSTAT="NO"               # GSI-based analysis statistics
 
 # Experiment mode (cycled or forecast-only)
 export MODE="{{ MODE }}" # cycled/forecast-only
@@ -105,15 +112,18 @@ export HOMEpost="${HOMEglobal}"
 export HOMEobsproc="${BASE_GIT:-}/obsproc/v${obsproc_run_ver:-}"
 
 # CONVENIENT utility scripts and other environment parameters
-export NMV="/bin/mv"
-export NLN="/bin/ln -sf"
-export VERBOSE="YES"
-export KEEPDATA="NO"
-export DEBUG_POSTSCRIPT="NO" # PBS only; sets debug=true
+export NMV="mv"
+export NLN="ln -sf"
 export CHGRP_RSTPROD="{{ CHGRP_RSTPROD }}"
 export CHGRP_CMD="{{ CHGRP_CMD }}"
 export NCDUMP="${NETCDF:-${netcdf_c_ROOT:-}}/bin/ncdump"
-export NCLEN="${HOMEglobal}/ush/getncdimlen"
+export NCLEN="${HOMEglobal}/ush/getncdimlen.py"
+
+# Log control
+export VERBOSE="YES"
+export CAT_MPMD_LOGS="YES"  # Copy MPMD logs to the parent log. Remove or set to NO when delivering to NCO.
+export DEBUG_POSTSCRIPT="NO" # PBS only; sets debug=true
+export CHECK_DEAD_LINKS="NO"
 
 # Machine environment, jobs, and other utility scripts
 export BASE_ENV="${HOMEglobal}/env"
@@ -135,7 +145,6 @@ export ATARDIR="{{ ATARDIR }}"
 export FETCHDIR="{{ FETCHDIR }}"
 
 # Commonly defined parameters in JJOBS
-export envir=${envir:-"prod"}
 export NET="gfs"  # NET is defined in the job-card (ecf)
 export RUN=${RUN:-"gfs"}  # RUN is defined in the job-card (ecf)
 
@@ -145,12 +154,12 @@ source "${EXPDIR}/config.com"
 export LOGSCRIPT=${LOGSCRIPT:-""}
 #export LOGSCRIPT=${LOGSCRIPT:-"startmsg"}
 
-export SENDECF=${SENDECF:-"NO"}
 export SENDSDM=${SENDSDM:-"NO"}
-export SENDDBN_NTC=${SENDDBN_NTC:-"NO"}
-export SENDDBN=${SENDDBN:-"NO"}
-export DBNROOT=${DBNROOT:-${UTILROOT:-}/fakedbn}
 export SENDAWIP=${SENDAWIP:-"NO"}
+# To create fake dbnet alerts, uncomment the next three lines
+#export SENDDBN=${SENDDBN:-"YES"}
+#export DBNROOT="${DATA}/fakedbn"
+#mkdir -p "${DBNROOT}/bin" && ln -sf "${HOMEglobal}/dev/ush/dbn_alert" "${DBNROOT}/bin/dbn_alert"
 
 # APP settings
 export APP="{{ APP }}"
@@ -384,6 +393,7 @@ fi
 export DOHYBVAR="{{ DOHYBVAR }}"
 export DOHYBVAR_OCN="{{ DOHYBVAR_OCN }}"
 export DOLETKF_OCN="{{ DOLETKF_OCN }}"
+export DOLETKF_OCN_INC="{{ DOLETKF_OCN_INC }}"
 export NMEM_ENS="{{ NMEM_ENS }}"
 export SMOOTH_ENKF="NO"
 export l4densvar=".true."
@@ -425,6 +435,9 @@ fi
 
 # Generate post-processing ensemble spread files
 export ENKF_SPREAD="YES"
+
+# WDQMS
+export DO_WDQMS="{{ DO_WDQMS | default('NO') }}"
 
 #Soil DA and whether it is (land) IAU
 if [[ "${RUN}" == "gdas" || "${RUN}" == "enkfgdas" ]]; then
@@ -488,9 +501,14 @@ export binary_diag=".false."
 export DO_CA="YES"
 
 # Verification options
-export DO_METP="{{ DO_METP }}"   # Run METPLUS jobs - set METPLUS settings in config.metp
-export DO_FIT2OBS="YES"      # Run fit to observations package
+export DO_METP={{ DO_METP }} # METplus verification via EMC_verif-global
+# METplus verification is not enabled on Hera, Derecho or Orion
+if [[ "${machine}" == "hera" || "${machine}" == "orion" || "${machine}" == "derecho" ]] && [[ ${DO_METP} == "YES" ]]; then
+   echo "WARNING: METplus verification not supported on ${machine}. Setting DO_METP=NO"
+   export DO_METP="NO"
+fi
 
+export DO_FIT2OBS="YES"      # Run fit to observations package
 #--online archive of netcdf files for fit2obs verification
 export FHMAX_FITS=132
 if [[ "${FHMAX_FITS}" -gt "${FHMAX_GFS}" ]]; then
@@ -515,12 +533,11 @@ if [[ "${DO_JEDIATMVAR}" = "YES" ]]; then
    export DO_VERFOZN="NO"     # Ozone data assimilation monitoring
    export DO_VERFRAD="NO"     # Radiance data assimilation monitoring
    export DO_VMINMON="NO"     # GSI minimization monitoring
-fi
-
-# TODO: Enable METplus on Ursa when verif-global has been upgraded to spack-stack 1.9.x+
-# TODO: Clean this up by allowing DO_METP to be system-specific and/or allow overriding that parameter
-if [[ "${machine}" == "URSA" || "${machine}" == "GAEAC6" || "${machine}" == "ORION" || "${machine}" == "HERCULES" ]]; then
-    export DO_METP=NO
+   export DO_ANLSTAT="YES"    # JEDI-based analysis statistics
+else
+   if [[ "${DO_AERO}" = "YES" || "${DO_JEDIOCNVAR}" = "YES" || "${DO_JEDISNOWDA}" = "YES" ]]; then
+     export DO_ANLSTAT="YES"  # JEDI-based analysis statistics
+   fi
 fi
 
 if [[ "${DOENKFONLY_ATM:-NO}" == "YES" ]] ; then
@@ -539,6 +556,9 @@ export OFFSET_START_HOUR=0
 
 # Number of regional collectives to create soundings for
 export NUM_SND_COLLECTIVES=${NUM_SND_COLLECTIVES:-9}
+
+# MOM6 IC setting needed for forecast and stage ics
+export MOM6_INTERP_ICS="{{ MOM6_INTERP_ICS }}"
 
 # Set JEDI atmospheric DA increment type
 if [[ "${DO_JEDIATMVAR}" == "YES" ]]; then

@@ -1,10 +1,15 @@
 #! /usr/bin/env bash
+set -x
 ##############################################################
 # Add the NCDC GIF processing to the end of the gempak_gif job
 # There is no timing issue with the NCDC GIF, so it is
 # okay to just add it here. If timing becomes a problem
 # in the future, we should move it above somewhere else.
 ##############################################################
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 cd "${DATA}" || exit 2
 
@@ -37,7 +42,8 @@ if [[ ${MODEL} == GDAS ]]; then
         "${HOMEglobal}/gempak/ush/gempak_${RUN}_f${fhr3}_gif.sh" && true
         export err=$?
         if [[ ${err} -ne 0 ]]; then
-            err_exit
+            pgm="gempak_${RUN}_f${fhr3}_gif.sh"
+            err_exit "Failed to generate GIF for forecast hour ${fhr3}"
         fi
     done
 fi

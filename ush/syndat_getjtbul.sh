@@ -6,11 +6,6 @@
 #  Y2K VERSION --  This script can process JTWC bulletins with EITHER a
 #                    2-digit year starting in column 20 or a 4-digit year
 #                    starting in column 20.
-# Mar 2013, DStokes - modified for WCOSS.  Added option to email developer.
-# Oct 2013, DStokes - Add check of stormname length and truncate if needed
-#                     in response to recent problems with JTWC reports.
-#                     Remove option to email developer.
-#
 #
 # Positional parameters passed in:
 #   1 - Run date (YYYYMMDDHH)
@@ -60,7 +55,7 @@ echo "  pdym1 is    ${pdym1}"
 echo
 echo "  ymddir is   ${PDY}"
 echo
-set_trace
+set -x
 
 find="${ymd} ${cyc}"
 echo "looking for string ${find} in ${jtwcdir}/tropcyc"
@@ -102,12 +97,12 @@ fi
 pgm=$(basename "${EXECglobal}/syndat_getjtbul.x")
 export pgm
 if [[ -s prep_step ]]; then
-    unset_strict
+    source "${USHglobal}/unset_strict.sh"
     source prep_step
-    set_strict
+    source "${USHglobal}/set_strict.sh"
 else
-    [[ -f errfile ]] && rm errfile
-    #shellcheck disable=SC2046
+    rm -f errfile
+    # shellcheck disable=SC2046
     unset FORT00 $(env | grep "^FORT[0-9]\{1,\}=" | awk -F= '{print $1}')
 fi
 
@@ -115,7 +110,7 @@ rm -f fnoc
 
 export FORT11=jtwcbul
 export FORT51=fnoc
-time -p "${EXECglobal}/${pgm}" 2> errfile
+time -p "${EXECglobal}/${pgm}" 2> errfile && true
 errget=$?
 cat errfile
 rm errfile
@@ -123,7 +118,7 @@ set +x
 echo
 echo "The foreground exit status for SYNDAT_GETJTBUL is ${errget}"
 echo
-set_trace
+set -x
 if [[ "${errget}" -gt '0' ]]; then
     if [[ "${errget}" -eq '1' ]]; then
         msg="No JTWC bulletins in ${jtwcdir}/tropcyc, no JTWC tcvitals available for qctropcy for ${run_date}"
@@ -152,7 +147,7 @@ echo "----------------------------------------------------------"
 echo "***********  COMPLETED PROGRAM syndat_getjtbul  **********"
 echo "----------------------------------------------------------"
 echo
-set_trace
+set -x
 
 if [[ "${errget}" -eq '0' ]]; then
     echo "Completed JTWC tcvitals records are:"

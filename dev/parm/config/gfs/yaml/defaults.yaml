@@ -26,9 +26,11 @@ base:
   FHMAX_ENKF_GFS: 12
   DOHYBVAR_OCN: "NO"
   DOLETKF_OCN: "NO"
+  DOLETKF_OCN_INC: "NO"
   DO_TEST_MODE: "NO"
   NMEM_ENS_GFS: 30
   NMEM_ENS_GFS_OFFSET: 20
+  MOM6_INTERP_ICS: "NO"
 
 atmanl:
   STATICB_TYPE: "gsibec"
@@ -77,6 +79,9 @@ marineanlletkf:
   SOCA_INPUT_FIX_DIR: "${FIXglobal}/gdas/soca/72x35x25/soca"
   SOCA_ANL_GEOM: "${FIXglobal}/gdas/soca/72x35x25/soca"
   SOCA_OBS_LIST: "${PARMglobal}/gdas/marine/obs/obs_list.yaml.j2"
+
+prep:
+  PROCESS_TROPCY: "NO"
 
 prepoceanobs:
   use_exp_obs: "YES"

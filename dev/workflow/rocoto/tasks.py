@@ -14,13 +14,13 @@ class Tasks:
     SERVICE_TASKS = ['arch_vrfy', 'earc_vrfy', 'stage_ic', 'globus', 'ens_globus']
     DTN_TASKS = ['arch_tars', 'earc_tars', 'fetch']
     VALID_TASKS = ['aerosol_init', 'stage_ic', 'gen_control_ic', 'fetch', 'globus', 'ens_globus',
-                   'prep_sfc', 'prep', 'anal', 'sfcanl', 'analcalc', 'analdiag', 'arch_vrfy', 'arch_tars', 'cleanup',
+                   'prep_sfc', 'prep', 'anal', 'sfcanl_regrid', 'sfcanl_gcycle', 'analcalc', 'analdiag', 'arch_vrfy', 'arch_tars',
                    'ecen_fv3jedi', 'analcalc_fv3jedi', 'cleanup',
                    'atmanlinit', 'atmanlvar', 'atmanlfv3inc', 'atmanlfinal',
                    'prep_emissions', 'prepoceanobs', 'prepatmanlbias',
                    'marineanlinit', 'marineanlletkf', 'marinebmatinit', 'marinebmat', 'marineanlvar',
                    'marineanlecen', 'marineanlchkpt', 'marineanlfinal', 'ocnanalvrfy',
-                   'eobs', 'epos', 'esfc', 'eupd',
+                   'eobs', 'epos', 'esfc_gcycle', 'esfc_regrid', 'eupd',
                    'earc_vrfy', 'earc_tars', 'ecen', 'echgres', 'ediag', 'efcs',
                    'atmensanlinit', 'atmensanlobs', 'atmensanlsol', 'atmensanlletkf', 'atmensanlfv3inc', 'atmensanlfinal', 'atmos_ensstat',
                    'aeroanlinit', 'aeroanlvar', 'aeroanlfinal', 'aeroanlgenb',
@@ -29,13 +29,13 @@ class Tasks:
                    'fcst',
                    'upp', 'atmanlprod', 'atmupp', 'goesupp',
                    'atmos_products', 'oceanice_products',
-                   'verfozn', 'verfrad', 'vminmon', 'anlstat',
+                   'verfozn', 'verfrad', 'vminmon', 'anlstat', 'wdqms',
                    'metp', 'fit2obs', 'extractvars',
                    'tracker', 'genesis', 'genesis_fsu',
                    'postsnd', 'awips', 'awips_20km_1p0deg', 'fbwind', 'npoess',
                    'gempak', 'gempakmeta', 'gempakmetancdc', 'gempakncdcupapgif', 'gempakpgrb2spec', 'npoess_pgrb2_0p5deg',
                    'waveawipsbulls', 'waveawipsgridded', 'wavegempak', 'waveinit',
-                   'wavepostbndpnt', 'wavepostbndpntbll', 'wavepostpnt', 'wavepostsbs', 'waveprep', 'wave_stat', 'wave_stat_pnt']
+                   'wavepostbndpnt', 'wavepostbndpntbll', 'wavepostpnt', 'wavepostgridded', 'waveprep', 'wave_stat', 'wave_stat_pnt']
 
     def __init__(self, app_config: AppConfig, run: str) -> None:
 
@@ -67,11 +67,11 @@ class Tasks:
         # DATAROOT is set by prod_envir in ops.  Here, we use `STMP` to construct DATAROOT
         dataroot_str = f"{self._base.get('STMP')}/RUNDIRS/{self._base.get('PSLOT')}/{self.run}.<cyclestr>@Y@m@d@H</cyclestr>"
         envar_dict = {'RUN_ENVIR': self._base.get('RUN_ENVIR', 'emc'),
+                      'envir': self._base.get('envir', 'para'),
                       'HOMEglobal': self.HOMEglobal,
                       'EXPDIR': self._base.get('EXPDIR'),
                       'NET': self._base.get('NET'),
                       'RUN': self.run,
-                      'CDATE': '<cyclestr>@Y@m@d@H</cyclestr>',  # TODO: remove CDATE
                       'PDY': '<cyclestr>@Y@m@d</cyclestr>',
                       'cyc': '<cyclestr>@H</cyclestr>',
                       'COMROOT': self._base.get('COMROOT'),
@@ -107,6 +107,7 @@ class Tasks:
         # Check the system configuration
         base = self._base
         self.clusters_batch = _validate_system_key(base, 'CLUSTERS')
+        self.clusters_exclusive = _validate_system_key(base, 'CLUSTERS_EXCLUSIVE')
         self.clusters_service = _validate_system_key(base, 'CLUSTERS_SERVICE')
         self.clusters_dtn = _validate_system_key(base, 'CLUSTERS_DTN')
 
@@ -114,14 +115,17 @@ class Tasks:
         self.reservation_batch = _validate_system_key(base, 'RESERVATION')
 
         self.partition_batch = _validate_system_key(base, 'PARTITION_BATCH')
+        self.partition_exclusive = _validate_system_key(base, 'PARTITION_EXCLUSIVE')
         self.partition_service = _validate_system_key(base, 'PARTITION_SERVICE')
         self.partition_dtn = _validate_system_key(base, 'PARTITION_DTN')
 
         self.queue_batch = _validate_system_key(base, 'QUEUE')
+        self.queue_exclusive = _validate_system_key(base, 'QUEUE_EXCLUSIVE')
         self.queue_service = _validate_system_key(base, 'QUEUE_SERVICE')
         self.queue_dtn = _validate_system_key(base, 'QUEUE_DTN')
 
         self.constraint_batch = _validate_system_key(base, 'CONSTRAINT')
+        self.constraint_exclusive = _validate_system_key(base, 'CONSTRAINT_EXCLUSIVE')
         self.constraint_service = _validate_system_key(base, 'CONSTRAINT_SERVICE')
         self.constraint_dtn = _validate_system_key(base, 'CONSTRAINT_DTN')
 
@@ -413,6 +417,7 @@ class Tasks:
 
         dtn_task = task_name in Tasks.DTN_TASKS
         service_task = task_name in Tasks.SERVICE_TASKS
+        exclusive_task = task_config.get('is_exclusive', False)
 
         if task_name not in Tasks.VALID_TASKS:
             raise KeyError(f"ERROR {task_name} is not a valid task!")
@@ -424,6 +429,14 @@ class Tasks:
             task_clusters = self.clusters_service if self.clusters_service else self.clusters_batch
             task_constraint = self.constraint_service if self.constraint_service else self.constraint_batch
             task_reservation = None  # Reservations are only for batch nodes
+
+        elif exclusive_task:
+            task_queue = self.queue_exclusive if self.queue_exclusive else self.queue_batch
+            task_partition = self.partition_exclusive if self.partition_exclusive else self.partition_batch
+            task_clusters = self.clusters_exclusive if self.clusters_exclusive else self.clusters_batch
+            task_constraint = self.constraint_exclusive if self.constraint_exclusive else self.constraint_batch
+            task_reservation = self.reservation_batch
+
         elif dtn_task:
             # First check if there is a DTN queue, partition, or clusters
             # If not, then try SERVICE queue, partition, clusters
@@ -483,13 +496,13 @@ class Tasks:
                 native = '-l place=vscatter'
 
             # Set either exclusive or shared - default on WCOSS2 is exclusive when not set
-            if task_config.get('is_exclusive', False):
+            if exclusive_task:
                 native += ':exclhost'
             else:
                 native += ':shared'
 
         elif scheduler in ['slurm']:
-            if task_config.get('is_exclusive', False):
+            if exclusive_task:
                 native = '--exclusive'
             else:
                 native = '--export=NONE'

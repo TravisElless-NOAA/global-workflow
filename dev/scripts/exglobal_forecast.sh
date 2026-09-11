@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 ################################################################################
 ## UNIX Script Documentation Block
@@ -84,6 +85,10 @@ source "${USHglobal}/forecast_postdet.sh"      # include functions for variables
 source "${USHglobal}/parsing_ufs_configure.sh" # include functions for ufs_configure processing
 
 source "${USHglobal}/atparse.bash" # include function atparse for parsing @[XYZ] templated files
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 # Coupling control switches, for coupling purpose, off by default
 cpl=${cpl:-.false.}
@@ -179,6 +184,7 @@ cpreq "${EXECglobal}/${FCSTEXEC}" "${DATA}/"
 ${APRUN_UFS} "${DATA}/${FCSTEXEC}" 1>&1 2>&2 && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
+    pgm="$(basename "${FCSTEXEC}")"
     err_exit "The forecast failed to run to completion!"
 fi
 

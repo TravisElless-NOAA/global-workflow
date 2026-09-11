@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 ################################################################################
 ####  UNIX Script Documentation Block
 #                      .                                             .
@@ -17,6 +18,10 @@
 #
 ################################################################################
 
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
+
 #  Directories.
 pwd=$(pwd)
 
@@ -33,7 +38,7 @@ export bcyc=${BDATE:8:2}
 
 # Utilities
 export CHGRP_CMD=${CHGRP_CMD:-"chgrp ${group_name:-rstprod}"}
-export NCLEN=${NCLEN:-${USHglobal}/getncdimlen}
+export NCLEN=${NCLEN:-${USHglobal}/getncdimlen.py}
 
 # IAU
 DOIAU=${DOIAU:-"NO"}
@@ -142,7 +147,8 @@ EOF
     "${USHglobal}/run_mpmd.sh" "${DATA}/mp_chgres.sh" && true
     export err=$?
     if [[ ${err} -ne 0 ]]; then
-        err_exit
+        pgm="run_mpmd.sh"
+        err_exit "Failed to run chgres on one or more forecast hours!"
     fi
 else
     echo "DO_CALC_ANALYSIS != YES, doing nothing"

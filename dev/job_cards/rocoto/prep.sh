@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-
+set -x
 ###############################################################
 # Source FV3GFS workflow modules
 source "${HOMEglobal}/dev/ush/load_modules.sh" run
@@ -12,6 +12,12 @@ fi
 export job="prep"
 export jobid="${job}.$$"
 source "${HOMEglobal}/ush/jjob_header.sh" -e "prep" -c "base prep"
+#{% if false %}
+source "${HOMEglobal}/ush/jjob_standard_vars.sh"
+#{% else %}
+#{% include jjob_var_setup.j2 %}
+#{% endif %}
+source "${HOMEglobal}/ush/jjob_shell_setup.sh"
 
 # Strip 'enkf' from RUN for pulling data
 RUN_local="${RUN/enkf/}"
@@ -38,6 +44,9 @@ declare -rx COMOUT_ATMOS_ANALYSIS="${ROTDIR}/${RUN_local}.${PDY}/${cyc}/analysis
 declare -rx COMOUT_OBS_PREV="${ROTDIR}/${GDUMP}.${gPDY}/${gcyc}/obs"
 declare -rx COMINobsproc_PREV="${DMPDIR}/${GDUMP}.${gPDY}/${gcyc}/atmos"
 declare -rx COMOUT_ATMOS_ANALYSIS_PREV="${ROTDIR}/${GDUMP}.${gPDY}/${gcyc}/analysis/atmos"
+
+# Prepobs still uses old HOME name
+declare -rx HOMEgfs="${HOMEglobal}"
 
 mkdir -p "${COMOUT_OBS}"
 
@@ -98,7 +107,7 @@ if [[ ${PROCESS_TROPCY} == "YES" ]]; then
 
     rm -f "${COMOUT_OBS}/${RUN_local}.t${cyc}z.syndata.tcvitals.tm00"
 
-    "${HOMEglobal}/dev/jobs/JGLOBAL_ATMOS_TROPCY_QC_RELOC"
+    "${HOMEglobal}/dev/jobs/JGLOBAL_ATMOS_TROPCY_QC"
     status=$?
     if [[ ${status} -ne 0 ]]; then
         exit "${status}"
@@ -164,10 +173,11 @@ fi
 # Create or Copy prepbufr, prepbufr.acft_profiles, nsstbufr files
 # Do not fail on external errors
 if [[ ${MAKE_PREPBUFR:-"YES"} == "YES" ]]; then
-    unset_strict
-    "${HOMEobsproc}/jobs/JOBSPROC_GLOBAL_PREP" && true
+    source "${USHglobal}/unset_strict.sh"
+    # Debug level < 0 stops obsproc from changing the PS4 format
+    DEBUG_LEVEL=-1 "${HOMEobsproc}/jobs/JOBSPROC_GLOBAL_PREP" && true
     export err=$?
-    set_strict
+    source "${USHglobal}/set_strict.sh"
     if [[ ${err} -ne 0 ]]; then
         err_exit "JOBSPROC_GLOBAL_PREP job failed, ABORT!"
     fi
@@ -183,10 +193,15 @@ else
         fi
 
     fi
-    cpreq "${PREPBUFR_DIR}/${OPREFIX}prepbufr" "${COMOUT_OBS}/${OPREFIX}prepbufr"
-    cpreq "${PREPBUFR_DIR}/${OPREFIX}prepbufr.acft_profiles" "${COMOUT_OBS}/${OPREFIX}prepbufr.acft_profiles"
+    cpcmd="cpreq"
+    if [[ "${CHGRP_RSTPROD}" == "NO" ]]; then
+        # When using non-restricted dumps, the following may not be present
+        cpcmd="cp"
+    fi
+    ${cpcmd} "${PREPBUFR_DIR}/${OPREFIX}prepbufr" "${COMOUT_OBS}/${OPREFIX}prepbufr"
+    ${cpcmd} "${PREPBUFR_DIR}/${OPREFIX}prepbufr.acft_profiles" "${COMOUT_OBS}/${OPREFIX}prepbufr.acft_profiles"
     if [[ ${DONST} == "YES" ]]; then
-        cpreq "${PREPBUFR_DIR}/${OPREFIX}nsstbufr" "${COMOUT_OBS}/${OPREFIX}nsstbufr"
+        ${cpcmd} "${PREPBUFR_DIR}/${OPREFIX}nsstbufr" "${COMOUT_OBS}/${OPREFIX}nsstbufr"
     fi
 fi
 
@@ -197,7 +212,7 @@ if [[ ${DONST} == "YES" ]]; then
 fi
 err=0
 for file in ${files}; do
-    if [[ ! -f "${COMOUT_OBS}/${OPREFIX}${file}" ]]; then
+    if [[ ! -f "${COMOUT_OBS}/${OPREFIX}${file}" && "${CHGRP_RSTPROD}" == "YES" ]]; then
         err=1
         echo "Failed to obtain/create ${file}, ABORT!"
     fi

@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 ################################################################################
 ####  UNIX Script Documentation Block
@@ -18,6 +19,9 @@
 #################################################################################
 
 #  Set environment.
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 #  Directories.
 # shellcheck disable=SC2153
@@ -37,7 +41,7 @@ export bcyc=${BDATE:8:2}
 
 # Utilities
 export CHGRP_CMD=${CHGRP_CMD:-"chgrp ${group_name:-rstprod}"}
-export NCLEN=${NCLEN:-${USHglobal}/getncdimlen}
+export NCLEN=${NCLEN:-${USHglobal}/getncdimlen.py}
 COMPRESS=${COMPRESS:-gzip}
 UNCOMPRESS=${UNCOMPRESS:-gunzip}
 APRUN_GSI=${APRUN_GSI:-${APRUN:-""}}
@@ -711,7 +715,8 @@ EOF
     "${USHglobal}/run_mpmd.sh" "${DATA}/cmdfile" && true
     export err=$?
     if [[ ${err} -ne 0 ]]; then
-        err_exit "Failed to unzip rad diag file!"
+        pgm="run_mpmd.sh"
+        err_exit "Failed to unzip at least one rad diag file!"
     fi
 fi # if [[ $USE_RADSTAT == "YES" ]
 
@@ -852,12 +857,27 @@ cat gsiparm.anl
 export OMP_NUM_THREADS=${NTHREADS_GSI}
 export pgm=${GSIEXEC}
 source prep_step
+# Restore default pgm after prep_step override
+pgm=$(basename "${BASH_SOURCE[0]}")
 
 cpreq "${GSIEXEC}" "${DATA}"
 ${APRUN_GSI} "${DATA}/$(basename "${GSIEXEC}")" 1>&1 2>&2
 export err=$?
 if [[ ${err} -ne 0 ]]; then
+    pgm="$(basename "${GSIEXEC}")"
     err_exit "Failed to run the GSI analysis!"
+fi
+
+##############################################
+# Send Alerts
+##############################################
+if [[ "${SENDDBN}" == "YES" ]]; then
+    if [[ "${RUN}" == "gdas" ]]; then
+        "${DBNROOT}/bin/dbn_alert" MODEL GDAS_MSC_abias_pc "${job}" "${ABIASPC}"
+        "${DBNROOT}/bin/dbn_alert" MODEL GDAS_MSC_abias_air "${job}" "${ABIASAIR}"
+    elif [[ "${RUN}" == "gfs" ]]; then
+        "${DBNROOT}/bin/dbn_alert" MODEL GFS_abias "${job}" "${ABIAS}"
+    fi
 fi
 
 ##############################################################
@@ -867,6 +887,7 @@ if [[ "${DO_CALC_INCREMENT}" == "YES" ]]; then
     ${CALCINCPY}
     export err=$?
     if [[ ${err} -ne 0 ]]; then
+        pgm="$(basename "${CALCINCPY}")"
         err_exit "Failed to calculate the analysis increment!"
     fi
 fi
@@ -889,20 +910,16 @@ if [[ ${RUN_SELECT} == "YES" ]]; then
         rm -f obsinput.tar
     fi
     ${NLN} "${SELECT_OBS}" obsinput.tar
-    ${CHGRP_CMD} obs_input.*
+    if [[ "${CHGRP_RSTPROD:-YES}" != "NO" ]]; then
+        ${CHGRP_CMD} obs_input.*
+    fi
     tar -cvf obsinput.tar obs_input.*
-    chmod 750 "${SELECT_OBS}"
-    ${CHGRP_CMD} "${SELECT_OBS}"
+    if [[ "${CHGRP_RSTPROD:-YES}" != "NO" ]]; then
+        chmod 750 "${SELECT_OBS}"
+        ${CHGRP_CMD} "${SELECT_OBS}"
+    fi
     rm -f obsinput.tar
     echo "$(date) END tar obs_input" >&2
-fi
-
-################################################################################
-# Send alerts
-if [[ "${SENDDBN}" == "YES" ]]; then
-    if [[ "${RUN}" == "gfs" ]]; then
-        "${DBNROOT}/bin/dbn_alert" MODEL GFS_abias "${job}" "${ABIAS}"
-    fi
 fi
 
 ################################################################################

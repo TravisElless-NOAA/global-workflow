@@ -1,10 +1,22 @@
 #! /usr/bin/env bash
+set -x
 
 ############################################
 # GDAS GEMPAK META NCDC PRODUCT GENERATION
 ############################################
 
 source "${HOMEglobal}/ush/jjob_header.sh" -e "gempak_meta" -c "base gempak"
+
+#{% if false %}
+source "${HOMEglobal}/ush/jjob_standard_vars.sh"
+#{% else %}
+#{% include jjob_var_setup.j2 %}
+#{% endif %}
+
+source "${USHglobal}/jjob_shell_setup.sh"
+# Set strict mode which will exit on error or undefined variable
+# and exit on error in a pipeline (e.g. if a command in "cmd | cmd2" fails)
+source "${USHglobal}/set_strict.sh"
 
 # Now set up GEMPAK/NTRANS environment
 
@@ -44,9 +56,6 @@ if ((cyc % 12 == 0)); then
     fi
 fi
 
-export COMINecmwf="${COMINecmwf:-$(compath.py "${envir}/ecmwf/${ecmwf_ver}")/ecmwf}"
-export COMINukmet="${COMINukmet:-$(compath.py "${envir}/ukmet/${ukmet_ver}")/ukmet}"
-
 export pgmout=OUTPUT.$$
 
 ########################################################
@@ -54,28 +63,15 @@ export pgmout=OUTPUT.$$
 "${HOMEglobal}/gempak/ush/gdas_meta_na.sh" && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to generate North American meta gempak products"
 fi
 
 "${HOMEglobal}/gempak/ush/gdas_meta_loop.sh" && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to generate looped image meta gempak products"
 fi
 
-if [[ "${cyc}" == '06' ]]; then
-    "${HOMEglobal}/gempak/ush/gdas_ecmwf_meta_ver.sh" && true
-    export err=$?
-    if [[ ${err} -ne 0 ]]; then
-        err_exit
-    fi
-
-    "${HOMEglobal}/gempak/ush/gdas_ukmet_meta_ver.sh" && true
-    export err=$?
-    if [[ ${err} -ne 0 ]]; then
-        err_exit
-    fi
-fi
 ########################################################
 
 ############################################
@@ -89,7 +85,7 @@ if ((cyc % 12 == 0)); then
 fi
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to generate NCDC GIFs from GDAS GEMPAK products"
 fi
 ########################################################
 

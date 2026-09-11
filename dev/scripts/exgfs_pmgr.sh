@@ -1,10 +1,15 @@
 #! /usr/bin/env bash
+set -x
 
 #
 # Script name:         exgfs_pmgr.sh.sms
 #
 #  This script monitors the progress of the gfs_fcst job
 #
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 hour=0
 TEND=384
@@ -30,6 +35,7 @@ done
 #
 # Wait for all fcst hours to finish
 #
+
 sleep_interval=10
 max_tries=1000
 for fhr in "${posthours[@]}"; do

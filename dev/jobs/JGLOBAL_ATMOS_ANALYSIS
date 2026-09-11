@@ -1,6 +1,18 @@
 #! /usr/bin/env bash
+set -x
 
 source "${HOMEglobal}/ush/jjob_header.sh" -e "anal" -c "base anal"
+
+#{% if false %}
+source "${HOMEglobal}/ush/jjob_standard_vars.sh"
+#{% else %}
+#{% include jjob_var_setup.j2 %}
+#{% endif %}
+
+source "${USHglobal}/jjob_shell_setup.sh"
+# Set strict mode which will exit on error or undefined variable
+# and exit on error in a pipeline (e.g. if a command in "cmd | cmd2" fails)
+source "${USHglobal}/set_strict.sh"
 
 ##############################################
 # Set variables used in the script
@@ -33,6 +45,9 @@ declare -rx COMIN_ATMOS_HISTORY_PREV="${ROTDIR}/${GDUMP}.${gPDY}/${gcyc}/model/a
 
 declare -rx COMIN_ATMOS_HISTORY_ENS_PREV="${ROTDIR}/${GDUMP_ENS}.${gPDY}/${gcyc}/ensstat/model/atmos/history"
 
+# Additional variables are set in scripts/exglobal_atmos_analysis.sh in order to loop over ensemble members:
+#  COMIN_ATMOS_HISTORY
+
 # shellcheck disable=SC2153
 mkdir -p "${COMOUT_ATMOS_ANALYSIS}"
 
@@ -56,7 +71,7 @@ export LEVS
 LEVS=$(${NCLEN} "${ATMGES}" pfull) && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to get LEVS from ${ATMGES}"
 fi
 
 if [[ "${DOHYBVAR}" == "YES" ]]; then
@@ -90,16 +105,7 @@ fi
 ${ANALYSISSH:-${SCRglobal}/exglobal_atmos_analysis.sh} && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
-fi
-
-##############################################
-# Send Alerts
-##############################################
-if [[ "${SENDDBN}" == "YES" ]] && [[ "${RUN}" == "gdas" ]]; then
-    "${DBNROOT}/bin/dbn_alert" MODEL GDAS_MSC_abias "${job}" "${COMOUT_ATMOS_ANALYSIS}/${APREFIX}abias.txt"
-    "${DBNROOT}/bin/dbn_alert" MODEL GDAS_MSC_abias_pc "${job}" "${COMOUT_ATMOS_ANALYSIS}/${APREFIX}abias_pc.txt"
-    "${DBNROOT}/bin/dbn_alert" MODEL GDAS_MSC_abias_air "${job}" "${COMOUT_ATMOS_ANALYSIS}/${APREFIX}abias_air.txt"
+    err_exit "Failed to run the GSI atmospheric analysis"
 fi
 
 ##############################################

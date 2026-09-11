@@ -79,6 +79,18 @@ export HOMEglobal
 
 echo "Sourcing global-workflow modules ..."
 source "${HOMEglobal}/dev/ush/gw_setup.sh"
+if [[ "${MACHINE_ID}" == "derecho" && "${compute_build}" == "NO" ]]; then
+    # Derecho has stricter limits on head node usage
+    cat << 'EOF'
+WARNING: Interactive build on Derecho is limited to four cores to comply
+         with login node policies. Consider killing (CTRL+C) and retrying
+         using compute build:
+
+         ./build_all.sh -A <HPC_ACCOUNT> -c [gfs] [gefs] [sfs] [gcafs] [gsi] [gdas] [all]
+
+EOF
+    max_cores=4
+fi
 
 # Un-export after gw_setup.sh
 export -n HOMEglobal
@@ -296,6 +308,8 @@ else
     fi
 
     builds_in_progress=true
+    consecutive_unknown=0
+    max_unknown=2
     while [[ ${builds_in_progress} == true ]]; do
 
         sleep 1m
@@ -331,15 +345,28 @@ else
         # Count number of builds still in progress and check for failures
         nsuccess=0
         nfailed=0
+        nunknown=0
         for name in "${build_names[@]}"; do
             job_state="${build_status[${name}]}"
-            if [[ "${job_state}" =~ "DEAD" || "${job_state}" =~ "UNKNOWN" ||
-                "${job_state}" =~ "UNAVAILABLE" || "${job_state}" =~ "FAIL" ]]; then
+            if [[ "${job_state}" =~ "DEAD" || "${job_state}" =~ "FAIL" ]]; then
                 nfailed=$((nfailed + 1))
+            elif [[ "${job_state}" =~ "UNKNOWN" || "${job_state}" =~ "UNAVAILABLE" ]]; then
+                nunknown=$((nunknown + 1))
             elif [[ "${job_state}" == "SUCCEEDED" ]]; then
                 nsuccess=$((nsuccess + 1))
             fi
         done
+
+        # Some schedulers are volatile, so don't fail until there are a few consecutive
+        # queries that return unknown status.
+        if [[ ${nunknown} -gt 0 ]]; then
+            consecutive_unknown=$((consecutive_unknown + 1))
+            if [[ ${consecutive_unknown} -gt ${max_unknown} ]]; then
+                nfailed=$((nfailed + nunknown))
+            fi
+        else
+            consecutive_unknown=0
+        fi
 
         # If any builds failed, exit with error
         if [[ ${nfailed} -gt 0 ]]; then

@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 ################################################################################
 ####  UNIX Script Documentation Block
 #                      .                                             .
@@ -6,6 +7,11 @@
 # Script description:  Runs chgres on changing resolution of GEFS stage ic control member
 ################################################################################
 # copy input files to DATA from the source directory
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
+
 cpreq "${FIXglobal}/am/global_hyblev.l${LEVS}.txt" "${DATA}/"
 cpreq "${FIXglobal}/orog/${CASE}/${CASE}_mosaic.nc" "${DATA}/"
 cpreq "${ATM_FILE}" "${DATA}/atm_input.nc"
@@ -77,9 +83,10 @@ cat << EOF > ./fort.41
 /
 EOF
 
-${APRUN_CHGRES} "${HOMEglobal}/sorc/ufs_utils.fd/exec/chgres_cube"
+${APRUN_CHGRES} "${EXECglobal}/chgres_cube"
 export err=$?
 if [[ ${err} -ne 0 ]]; then
+    pgm="chgres_cube"
     err_exit "chgres_cube failed to create cold start ICs, ABORT!"
 fi
 ################################################################################

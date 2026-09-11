@@ -27,7 +27,7 @@ outfilbase=gfs_${PDY}${cyc}
 #  Get the list of individual station files.
 
 date
-cat "${COMOUT_ATMOS_BUFR}/bufr."*".${PDY}${cyc}" > bufr.combined
+cat "${COMIN_ATMOS_BUFR}/bufr."*".${PDY}${cyc}" > bufr.combined
 date
 
 snd=${outfilbase}.snd
@@ -47,7 +47,7 @@ EOF
 
 date
 
-/bin/rm ./*.nts
+rm -f ./*.nts
 
 snd_out=${outfilbase}.soundings.bufr
 sfc_out=${outfilbase}.sfc.bufr

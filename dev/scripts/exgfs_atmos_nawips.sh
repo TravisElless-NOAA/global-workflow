@@ -1,8 +1,13 @@
 #! /usr/bin/env bash
+set -x
 
 ###################################################################
 # echo "exnawips - convert NCEP GRIB files into GEMPAK Grids"
 ###################################################################
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 #### If EMC GFS PARA runs hourly file are not available, The ILPOST
 #### will set to 3 hour in EMC GFS PARA.
@@ -22,7 +27,7 @@ cd "${DATA_RUN}" || exit 1
 # "Import" functions used in this script
 source "${USHglobal}/product_functions.sh"
 
-NAGRIB="${GEMEXE}/nagrib2"
+NAGRIB="${GEMEXE}/nagrib2_nc"
 
 cpyfil=gds
 garea=dset
@@ -92,7 +97,7 @@ else
     cpreq "${GRIBIN}" "grib${fhr3}"
 fi
 
-export pgm="nagrib2 F${fhr3}"
+export pgm="nagrib2_nc F${fhr3}"
 startmsg
 
 ${NAGRIB} << EOF
@@ -115,14 +120,10 @@ EOF
 
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to convert ${grid} grid from GRIB to GEMPAK for forecast hour ${fhr3}"
 fi
-
-"${GEMEXE}/gpend"
-export err=$?
-if [[ ${err} -ne 0 ]]; then
-    err_exit "${GEMEXE}/gpend failed!"
-fi
+# Restore default pgm after override
+pgm=$(basename "${BASH_SOURCE[0]}")
 
 cpfs "${GEMGRD}" "${destination}/${GEMGRD}"
 

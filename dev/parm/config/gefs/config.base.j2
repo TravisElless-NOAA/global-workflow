@@ -15,13 +15,16 @@ export RUN_ENVIR="emc"
 export ACCOUNT="{{ ACCOUNT }}"
 export QUEUE="{{ QUEUE }}"
 export QUEUE_SERVICE="{{ QUEUE_SERVICE | default('${QUEUE}') }}"
+export QUEUE_EXCLUSIVE="{{ QUEUE_EXCLUSIVE | default('${QUEUE}') }}"
 export QUEUE_DTN="{{ QUEUE_DTN | default('${QUEUE_SERVICE}') }}"
 export PARTITION_BATCH="{{ PARTITION_BATCH }}"
 export PARTITION_SERVICE="{{ PARTITION_SERVICE | default() }}"
+export PARTITION_EXCLUSIVE="{{ PARTITION_EXCLUSIVE | default() }}"
 export PARTITION_DTN="{{ PARTITION_DTN | default() }}"
 export RESERVATION="{{ RESERVATION | default() }}"
 export CLUSTERS="{{ CLUSTERS | default() }}"
 export CLUSTERS_SERVICE="{{ CLUSTERS_SERVICE | default('${CLUSTERS}') }}"
+export CLUSTERS_EXCLUSIVE="{{ CLUSTERS_EXCLUSIVE | default('${CLUSTERS}') }}"
 export CLUSTERS_DTN="{{ CLUSTERS_DTN | default('${CLUSTERS_SERVICE}') }}"
 
 # Project to use in mass store:
@@ -75,15 +78,18 @@ export GEFSTYPE="{{ GEFSTYPE }}" # gefs-real-time/gefs-offline
 export HOMEpost="${HOMEglobal}"
 
 # CONVENIENT utility scripts and other environment parameters
-export NMV="/bin/mv"
-export NLN="/bin/ln -sf"
-export VERBOSE="YES"
-export KEEPDATA="{{ KEEPDATA }}"
-export DEBUG_POSTSCRIPT="NO" # PBS only; sets debug=true
+export NMV="mv"
+export NLN="ln -sf"
 export CHGRP_RSTPROD="{{ CHGRP_RSTPROD }}"
 export CHGRP_CMD="{{ CHGRP_CMD }}"
 export NCDUMP="${NETCDF:-${netcdf_c_ROOT:-}}/bin/ncdump"
-export NCLEN="${HOMEglobal}/ush/getncdimlen"
+export NCLEN="${HOMEglobal}/ush/getncdimlen.py"
+
+# Log control
+export VERBOSE="YES"
+export CHECK_DEAD_LINKS="NO"
+export CAT_MPMD_LOGS="YES"  # Copy MPMD logs to the parent log. Remove or set to NO when delivering to NCO.
+export DEBUG_POSTSCRIPT="NO" # PBS only; sets debug=true
 
 # Machine environment, jobs, and other utility scripts
 export BASE_ENV="${HOMEglobal}/env"
@@ -102,7 +108,6 @@ export ATARDIR="{{ ATARDIR }}"
 export FETCHDIR="{{ FETCHDIR }}"  # HPSS or local directory where IC tarball(s) can be found.
 
 # Commonly defined parameters in JJOBS
-export envir=${envir:-"prod"}
 export NET="gefs"  # NET is defined in the job-card (ecf)
 export RUN="gefs"  # RUN is defined in the job-card (ecf)
 
@@ -112,11 +117,7 @@ source "${EXPDIR}/config.com"
 export LOGSCRIPT=${LOGSCRIPT:-""}
 #export LOGSCRIPT=${LOGSCRIPT:-"startmsg"}
 
-export SENDECF=${SENDECF:-"NO"}
 export SENDSDM=${SENDSDM:-"NO"}
-export SENDDBN_NTC=${SENDDBN_NTC:-"NO"}
-export SENDDBN=${SENDDBN:-"NO"}
-export DBNROOT=${DBNROOT:-${UTILROOT:-}/fakedbn}
 export SENDAWIP=${SENDAWIP:-"NO"}
 
 # APP settings

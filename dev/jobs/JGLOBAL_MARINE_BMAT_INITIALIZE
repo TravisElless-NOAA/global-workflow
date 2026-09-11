@@ -1,6 +1,7 @@
 #!/bin/bash
+set -x
 
-export DATAjob="${DATAROOT}/marineanalysis.${PDY:-}${cyc}"
+export DATAjob="${DATAROOT}/${RUN}_marineanalysis.${PDY:-}${cyc}"
 # Create the directory to hold the BMAT initialization data
 export DATA="${DATAjob}/marinebmat"
 # Create the directory to hold ensemble perturbations
@@ -12,6 +13,17 @@ if [[ ! -d "${DATAstaticb}" ]]; then mkdir -p "${DATAstaticb}"; fi
 # source config.base, config.ocnanal and config.marinebmatinit
 # and pass marinebmat to ${machine}.env
 source "${HOMEglobal}/ush/jjob_header.sh" -e "marinebmatinit" -c "base marinebmat marinebmatinit"
+
+#{% if false %}
+source "${HOMEglobal}/ush/jjob_standard_vars.sh"
+#{% else %}
+#{% include jjob_var_setup.j2 %}
+#{% endif %}
+
+source "${USHglobal}/jjob_shell_setup.sh"
+# Set strict mode which will exit on error or undefined variable
+# and exit on error in a pipeline (e.g. if a command in "cmd | cmd2" fails)
+source "${USHglobal}/set_strict.sh"
 
 ##############################################
 # Set variables used in the script
@@ -47,8 +59,8 @@ declare -rx COMIN_ICE_HISTORY_PREV="${ROTDIR}/${GDUMP}.${gPDY}/${gcyc}/model/ice
 declare -rx COMIN_OCEAN_HISTORY_ENS_PREV="${ROTDIR}/${GDUMP_ENS}.${gPDY}/${gcyc}/model/ocean/history"
 declare -rx COMIN_ICE_HISTORY_ENS_PREV="${ROTDIR}/${GDUMP_ENS}.${gPDY}/${gcyc}/model/ice/history"
 
-declare -rx COMOUT_OCEAN_BMATRIX="${ROTDIR}/${RUN}.${PDY}/${cyc}/bmatrix/ocean"
-declare -rx COMOUT_ICE_BMATRIX="${ROTDIR}/${RUN}.${PDY}/${cyc}/bmatrix/ice"
+declare -rx COMOUT_OCEAN_BMATRIX="${ROTDIR}/${RUN}.${PDY}/${cyc}/analysis/ocean/bmatrix"
+declare -rx COMOUT_ICE_BMATRIX="${ROTDIR}/${RUN}.${PDY}/${cyc}/analysis/ice/bmatrix"
 
 mkdir -p "${COMOUT_OCEAN_BMATRIX}"
 mkdir -p "${COMOUT_ICE_BMATRIX}"
@@ -60,7 +72,7 @@ EXSCRIPT=${GDASMARINEBMATRUNPY:-${SCRglobal}/exglobal_marinebmat_initialize.py}
 ${EXSCRIPT} && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to initialize the marine background error covariance matrix"
 fi
 ##############################################
 # End JOB SPECIFIC work

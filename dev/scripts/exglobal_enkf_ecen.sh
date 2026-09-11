@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 ################################################################################
 ####  UNIX Script Documentation Block
@@ -17,6 +18,10 @@
 #
 ################################################################################
 
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
+
 # Directories.
 pwd=$(pwd)
 
@@ -24,7 +29,7 @@ pwd=$(pwd)
 ntiles=${ntiles:-6}
 
 # Utilities
-NCLEN=${NCLEN:-${USHglobal}/getncdimlen}
+NCLEN=${NCLEN:-${USHglobal}/getncdimlen.py}
 
 # Scripts
 
@@ -138,11 +143,14 @@ for FHR in $(seq "${FHMIN}" "${FHOUT}" "${FHMAX}"); do
         export OMP_NUM_THREADS=${NTHREADS_ECEN}
         export pgm=${GETATMENSMEANEXEC}
         source prep_step
+        # Restore default pgm after prep_step override
+        pgm=$(basename "${BASH_SOURCE[0]}")
 
         cpreq "${GETATMENSMEANEXEC}" "${DATA}"
         ${APRUN_ECEN} "${DATA}/$(basename "${GETATMENSMEANEXEC}")" "${DATAPATH}" "${ATMANLMEANNAME}" "${ATMANLNAME}" "${NMEM_ENS}"
         export err=$?
         if [[ ${err} -ne 0 ]]; then
+            pgm="$(basename "${GETATMENSMEANEXEC}")"
             err_exit "FATAL ERROR: Failed to recenter the ensemble analyses!"
         fi
     else
@@ -157,11 +165,14 @@ for FHR in $(seq "${FHMIN}" "${FHOUT}" "${FHMAX}"); do
         export OMP_NUM_THREADS=${NTHREADS_ECEN}
         export pgm=${GETATMENSMEANEXEC}
         source prep_step
+        # Restore default pgm after prep_step override
+        pgm=$(basename "${BASH_SOURCE[0]}")
 
         cpreq "${GETATMENSMEANEXEC}" "${DATA}"
         ${APRUN_ECEN} "${DATA}/$(basename "${GETATMENSMEANEXEC}")" "${DATAPATH}" "${ATMINCMEANNAME}" "${ATMINCNAME}" "${NMEM_ENS}"
         export err=$?
         if [[ ${err} -ne 0 ]]; then
+            pgm="$(basename "${GETATMENSMEANEXEC}")"
             err_exit "Failed to recenter the ensemble increments!"
         fi
 
@@ -176,11 +187,14 @@ for FHR in $(seq "${FHMIN}" "${FHOUT}" "${FHMAX}"); do
             export OMP_NUM_THREADS=${NTHREADS_ECEN}
             export pgm=${GETATMENSMEANEXEC}
             source prep_step
+            # Restore default pgm after prep_step override
+            pgm=$(basename "${BASH_SOURCE[0]}")
 
             cpreq "${GETATMENSMEANEXEC}" "${DATA}"
             ${APRUN_ECEN} "${DATA}/$(basename "${GETATMENSMEANEXEC}")" "${DATAPATH}" "${ATMGESMEANNAME}" "${ATMGESNAME}" "${NMEM_ENS}"
             export err=$?
             if [[ ${err} -ne 0 ]]; then
+                pgm="$(basename "${GETATMENSMEANEXEC}")"
                 err_exit "Failed to recenter the ensemble mean guess!"
             fi
         fi
@@ -239,6 +253,7 @@ EOF
             ${APRUN_CHGRES} ./chgres.x
             export err=$?
             if [[ ${err} -ne 0 ]]; then
+                pgm="chgres.x"
                 err_exit "Failed to change the resolution of the deterministic analysis to the ensemble resolution!"
             fi
         fi
@@ -255,11 +270,14 @@ EOF
             export OMP_NUM_THREADS=${NTHREADS_ECEN}
             export pgm=${RECENATMEXEC}
             source prep_step
+            # Restore default pgm after prep_step override
+            pgm=$(basename "${BASH_SOURCE[0]}")
 
             cpreq "${RECENATMEXEC}" "${DATA}"
             ${APRUN_ECEN} "${DATA}/$(basename "${RECENATMEXEC}")" "${FILENAMEIN}" "${FILENAME_MEANIN}" "${FILENAME_MEANOUT}" "${FILENAMEOUT}" "${NMEM_ENS}"
             export err=$?
             if [[ ${err} -ne 0 ]]; then
+                pgm="$(basename "${RECENATMEXEC}")"
                 err_exit "Failed to recenter the ensemble resolution mean analysis"
             fi
         else
@@ -286,11 +304,14 @@ EOF
 
             export pgm=${RECENATMEXEC}
             source prep_step
+            # Restore default pgm after prep_step override
+            pgm=$(basename "${BASH_SOURCE[0]}")
 
             cpreq "${RECENATMEXEC}" "${DATA}"
             ${APRUN_ECEN} "${DATA}/$(basename "${RECENATMEXEC}")" "${FILENAMEIN}" "${FILENAME_INCMEANIN}" "${FILENAME_GSIDET}" "${FILENAMEOUT}" "${NMEM_ENS}" "${FILENAME_GESMEANIN}"
             export err=$?
             if [[ ${err} -ne 0 ]]; then
+                pgm="$(basename "${RECENATMEXEC}")"
                 err_exit "Failed to recenter the mean ensemble resolution increments!"
             fi
         fi
@@ -310,6 +331,8 @@ EOF
 
         export pgm=${CALCINCEXEC}
         source prep_step
+        # Restore default pgm after prep_step override
+        pgm=$(basename "${BASH_SOURCE[0]}")
 
         cpreq "${CALCINCEXEC}" "${DATA}"
         rm -f calc_increment.nml
@@ -333,6 +356,7 @@ EOF
         ${APRUN_CALCINC} "${DATA}/$(basename "${CALCINCEXEC}")"
         export err=$?
         if [[ ${err} -ne 0 ]]; then
+            pgm="$(basename "${CALCINCEXEC}")"
             err_exit "Failed to calculate the increment from the ensemble guess!"
         fi
     fi

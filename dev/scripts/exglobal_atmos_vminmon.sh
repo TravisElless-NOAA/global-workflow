@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 ################################################################################
 ####  UNIX Script Documentation Block
@@ -16,6 +17,10 @@
 #      >0 - some problem encountered
 #
 ################################################################################
+
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
 
 if [[ ! -s "${gsistat}" ]]; then
 

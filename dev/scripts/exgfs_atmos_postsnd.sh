@@ -1,4 +1,5 @@
 #! /usr/bin/env bash
+set -x
 
 ################################################################
 # Script Name:		exgfs_atmos_postsnd.sh.sms
@@ -23,6 +24,10 @@
 #                          it requires 7 nodes & allocate 21 processes per node(num_ppn=21)
 ################################################################
 
+# Set default pgm for err_exit
+pgm=$(basename "${BASH_SOURCE[0]}")
+export pgm
+
 runscript="${USHglobal}/gfs_bufr.sh"
 
 cd "${DATA}" || exit 2
@@ -45,7 +50,7 @@ export NINT1=${FHOUT_HF_GFS:-1}
 export NEND1=${FHMAX_HF_GFS:-120}
 export NINT3=${FHOUT_GFS:-3}
 
-GETDIM="${USHglobal}/getncdimlen"
+GETDIM="${USHglobal}/getncdimlen.py"
 LEVS=$(${GETDIM} "${COMIN_ATMOS_HISTORY}/${RUN}.${cycle}.atm.f000.${atmfm}" pfull)
 declare -x LEVS
 
@@ -117,6 +122,7 @@ done
 "${USHglobal}/run_mpmd.sh" "${DATA}/poescript_bufr" && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
+    pgm="run_mpmd.sh"
     err_exit "One or more BUFR MPMD tasks failed!"
 fi
 
@@ -147,7 +153,12 @@ if [[ $((10#${fhr})) -eq 0 ]]; then
 else
     export F00FLAG="NO"
 fi
-${runscript} "${fhr}" "${fhr_p}" "${FINT}" "${F00FLAG}" "${DATA}"
+${runscript} "${fhr}" "${fhr_p}" "${FINT}" "${F00FLAG}" "${DATA}" && true
+export err=$?
+if [[ ${err} -ne 0 ]]; then
+    pgm="$(basename "${runscript}")"
+    err_exit "Failed to generate BUFR sounding files for forecast hour ${fhr}!"
+fi
 
 ############################################
 # Tar and gzip the bufr files created so far

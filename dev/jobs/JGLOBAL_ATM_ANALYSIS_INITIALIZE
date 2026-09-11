@@ -1,7 +1,19 @@
 #! /usr/bin/env bash
+set -x
 
 export DATA=${DATA:-${DATAROOT}/${RUN}atmanl_${cyc}}
 source "${HOMEglobal}/ush/jjob_header.sh" -e "atmanlinit" -c "base atmanl atmanlinit"
+
+#{% if false %}
+source "${HOMEglobal}/ush/jjob_standard_vars.sh"
+#{% else %}
+#{% include jjob_var_setup.j2 %}
+#{% endif %}
+
+source "${USHglobal}/jjob_shell_setup.sh"
+# Set strict mode which will exit on error or undefined variable
+# and exit on error in a pipeline (e.g. if a command in "cmd | cmd2" fails)
+source "${USHglobal}/set_strict.sh"
 
 ##############################################
 # Set variables used in the script
@@ -33,7 +45,19 @@ EXSCRIPT=${GDASATMINITPY:-${SCRglobal}/exglobal_atm_analysis_initialize.py}
 ${EXSCRIPT} && true
 export err=$?
 if [[ ${err} -ne 0 ]]; then
-    err_exit
+    err_exit "Failed to initialize the atmospheric analysis"
+fi
+
+# TODO - implement better way to set these parameters
+if [[ "${LOCALIZATION_TYPE}" == "gsibec" ]]; then
+    target_file="${DATA}/berror/gfs_gsi_global.nml"
+
+    sed -i \
+        -e "s|TLNMC_OPTION|${tlnmc_option}|g" \
+        -e "s|BETAS0|${beta_s0}|g" \
+        -e "s|NMEM_ENS|${NMEM_ENS}|g" \
+        -e "s|PREFIX_ENS|enkf${GDUMP}.t${gcyc}z|g" \
+        "${target_file}"
 fi
 
 ##############################################
