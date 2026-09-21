@@ -62,7 +62,7 @@ case ${step} in
     ;;
 
   "atmanlvar" | "atmensanlsol")
-    export tasks_per_node=48
+    export tasks_per_node=24
     ;;
 
   "atmensanlobs")
