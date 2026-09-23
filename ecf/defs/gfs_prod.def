@@ -12,9 +12,9 @@ suite gfs_v17_nco
     edit QUEUE_ARCH 'dev_transfer'
     edit OUTPUTDIR '/lfs/h3/emc/eib/noscrub/ptmp/%EMC_USER%/ecflow_gfs/para/output/prod/today'
     edit EXPDIR '/lfs/h3/emc/eib/noscrub/%EMC_USER%/gfs/para/packages/gfs.%gfs_ver%/parm/config/gfs'
+    edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
     family 00
       edit CYC '00'
-      edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
       task cycle_begin
         # To prevent clobbering a still-running gfs, check that the GFS from 2 cycles ago is complete.
         # This effectively limits the number of cycles to 2.
@@ -23,7 +23,6 @@ suite gfs_v17_nco
         edit RUN 'gfs'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_tropcy_qc
               #event 1 jtwc_bull_email
               trigger :TIME >= 0241 and :TIME < 0245
@@ -33,7 +32,6 @@ suite gfs_v17_nco
               trigger :TIME >= 0307 and :TIME < 0312
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_obs_bufr_dump
               # TODO make this trigger off of obsproc dump job completion
               trigger :TIME >= 0307 and :TIME < 0312
@@ -44,7 +42,6 @@ suite gfs_v17_nco
         endfamily		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgfs_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/00/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete
@@ -53,7 +50,6 @@ suite gfs_v17_nco
         endfamily		//init
         family analysis
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger  /gfs_v17_0/primary/00/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../prep/atmos/jgfs_atmos_prep_sfc==complete and ../../prep/atmos/jgfs_atmos_tropcy_qc==complete and ../../../../18/enkfgdas/ensstat==complete
@@ -66,7 +62,6 @@ suite gfs_v17_nco
               trigger jgfs_atmos_anal_calc==complete
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgfs_marine_obs_dump==complete and ../../../../18/enkfgdas/forecast==complete and ../../../../18/gdas/forecast==complete
@@ -82,7 +77,6 @@ suite gfs_v17_nco
               trigger jgfs_marine_anal_chkpt==complete
           endfamily		//marine
           family snow
-            edit WGF 'snow'
             task jgfs_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/00/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../../../18/gdas/forecast/jgdas_fcst==complete
@@ -856,7 +850,6 @@ suite gfs_v17_nco
         endfamily		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgfs_atmos_products_f000
                 edit FHR '000'
@@ -3791,7 +3784,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily		//atmos
           family ice
-            edit WGF 'ice'
             task jgfs_ice_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -4050,7 +4042,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ice_products_f384
           endfamily		//ice
           family ocean
-            edit WGF 'ocean'
             task jgfs_ocean_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -4309,7 +4300,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ocean_products_f384
           endfamily		//ocean
           family wave
-            edit WGF 'wave'
             family gridded
               task jgfs_wave_post_gridded_f000
                 edit FHR '000'
@@ -5338,7 +5328,6 @@ suite gfs_v17_nco
         endfamily		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_vminmon
               trigger ../../analysis/atmos/jgfs_atmos_anal==complete
           endfamily		//atmos
@@ -5348,7 +5337,6 @@ suite gfs_v17_nco
         edit RUN 'gdas'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_tropcy_qc
               trigger :TIME >= 0545 and :TIME < 0550
             task jgdas_atmos_prep_sfc
@@ -5357,7 +5345,6 @@ suite gfs_v17_nco
               trigger :TIME >= 0610 and :TIME < 0615
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_obs_bufr_dump
               # TODO make this trigger off of obsproc dump job completion
               trigger :TIME >= 0610 and :TIME < 0615
@@ -5368,7 +5355,6 @@ suite gfs_v17_nco
         endfamily		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgdas_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/00/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete
@@ -5395,7 +5381,6 @@ suite gfs_v17_nco
               trigger jgdas_atmos_anal_calc==complete
           endfamily  		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgdas_marine_obs_dump==complete and ../../../../18/enkfgdas/forecast==complete and ../../../../18/gdas/forecast==complete
@@ -5411,7 +5396,6 @@ suite gfs_v17_nco
               trigger jgdas_marine_anal_chkpt==complete
           endfamily  		//marine
           family snow
-            edit WGF 'snow'
             task jgdas_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/00/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete and ../../../../18/gdas/forecast/jgdas_fcst==complete
@@ -5450,7 +5434,6 @@ suite gfs_v17_nco
         endfamily    		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgdas_atmos_products_f000
                 edit FHR '000'
@@ -5543,7 +5526,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily  		//atmos
           family wave
-            edit WGF 'wave'
             family gridded
               task jgdas_wave_post_gridded_f000
                 edit FHR '000'
@@ -5592,7 +5574,6 @@ suite gfs_v17_nco
         endfamily    		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_verfozn
               trigger ../../analysis/atmos/jgdas_atmos_anal_diag==complete
             task jgdas_atmos_verfrad
@@ -5604,8 +5585,6 @@ suite gfs_v17_nco
       endfamily      		//gdas
       family enkfgdas
         edit RUN 'enkfgdas'
-        edit WGF 'enkf'
-        edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
         family analysis
           family create
             task jenkfgdas_atmos_ens_observer
@@ -6243,14 +6222,12 @@ suite gfs_v17_nco
 
     family 06
       edit CYC '06'
-      edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
       task cycle_begin
         trigger (../00/gdas/forecast == active or ../00/gdas/forecast == complete) and (../18/gfs/forecast != active)
       family gfs
         edit RUN 'gfs'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_tropcy_qc
               #event 1 jtwc_bull_email
               trigger :TIME >= 0841 and :TIME < 0845
@@ -6260,7 +6237,6 @@ suite gfs_v17_nco
               trigger :TIME >= 0907 and :TIME < 0912
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_obs_bufr_dump
               # TODO make this trigger off of obsproc dump job completion
               trigger :TIME >= 0907 and :TIME < 0912
@@ -6271,7 +6247,6 @@ suite gfs_v17_nco
         endfamily		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgfs_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/06/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete
@@ -6280,7 +6255,6 @@ suite gfs_v17_nco
         endfamily		//init
         family analysis
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger  /gfs_v17_0/primary/06/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../prep/atmos/jgfs_atmos_prep_sfc==complete and ../../prep/atmos/jgfs_atmos_tropcy_qc==complete and ../../../../00/enkfgdas/ensstat==complete
@@ -6293,7 +6267,6 @@ suite gfs_v17_nco
               trigger jgfs_atmos_anal_calc==complete
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgfs_marine_obs_dump==complete and ../../../../00/enkfgdas/forecast==complete and ../../../../00/gdas/forecast==complete
@@ -6309,7 +6282,6 @@ suite gfs_v17_nco
               trigger jgfs_marine_anal_chkpt==complete
           endfamily		//marine
           family snow
-            edit WGF 'snow'
             task jgfs_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/06/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../../../00/gdas/forecast/jgdas_fcst==complete
@@ -7083,7 +7055,6 @@ suite gfs_v17_nco
         endfamily		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgfs_atmos_products_f000
                 edit FHR '000'
@@ -10018,7 +9989,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily		//atmos
           family ice
-            edit WGF 'ice'
             task jgfs_ice_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -10277,7 +10247,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ice_products_f384
           endfamily		//ice
           family ocean
-            edit WGF 'ocean'
             task jgfs_ocean_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -10536,7 +10505,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ocean_products_f384
           endfamily		//ocean
           family wave
-            edit WGF 'wave'
             family gridded
               task jgfs_wave_post_gridded_f000
                 edit FHR '000'
@@ -11565,7 +11533,6 @@ suite gfs_v17_nco
         endfamily		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_vminmon
               trigger ../../analysis/atmos/jgfs_atmos_anal==complete
           endfamily		//atmos
@@ -11575,7 +11542,6 @@ suite gfs_v17_nco
         edit RUN 'gdas'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_tropcy_qc
               trigger :TIME >= 1145 and :TIME < 1150
             task jgdas_atmos_prep_sfc
@@ -11584,7 +11550,6 @@ suite gfs_v17_nco
               trigger :TIME >= 1210 and :TIME < 1215
           endfamily  		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_obs_bufr_dump
               #NCO/Ops should use obsproc trigger.  Time trigger is a workaround for development
               trigger :TIME >= 1210 and :TIME < 1215
@@ -11594,7 +11559,6 @@ suite gfs_v17_nco
         endfamily    		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgdas_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/06/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete
@@ -11621,7 +11585,6 @@ suite gfs_v17_nco
               trigger jgdas_atmos_anal_calc==complete
           endfamily  		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgdas_marine_obs_dump==complete and ../../../../00/enkfgdas/forecast==complete and ../../../../00/gdas/forecast==complete
@@ -11637,7 +11600,6 @@ suite gfs_v17_nco
               trigger jgdas_marine_anal_chkpt==complete
           endfamily  		//marine
           family snow
-            edit WGF 'snow'
             task jgdas_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/06/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete and ../../../../00/gdas/forecast/jgdas_fcst==complete
@@ -11676,7 +11638,6 @@ suite gfs_v17_nco
         endfamily    		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgdas_atmos_products_f000
                 edit FHR '000'
@@ -11769,7 +11730,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily  		//atmos
           family wave
-            edit WGF 'wave'
             family gridded
               task jgdas_wave_post_gridded_f000
                 edit FHR '000'
@@ -11818,7 +11778,6 @@ suite gfs_v17_nco
         endfamily    		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_verfozn
               trigger ../../analysis/atmos/jgdas_atmos_anal_diag==complete
             task jgdas_atmos_verfrad
@@ -11830,8 +11789,6 @@ suite gfs_v17_nco
       endfamily      		//gdas
       family enkfgdas
         edit RUN 'enkfgdas'
-        edit WGF 'enkf'
-        edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
         family analysis
           family create
             task jenkfgdas_atmos_ens_observer
@@ -12469,14 +12426,12 @@ suite gfs_v17_nco
 
     family 12
       edit CYC '12'
-      edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
       task cycle_begin
         trigger (../06/gdas/forecast == active or ../06/gdas/forecast == complete) and (../00/gfs/forecast != active)
       family gfs
         edit RUN 'gfs'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_tropcy_qc
               #event 1 jtwc_bull_email
               trigger :TIME >= 1441 and :TIME < 1445
@@ -12486,7 +12441,6 @@ suite gfs_v17_nco
               trigger :TIME >= 1507 and :TIME < 1512
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_obs_bufr_dump
               # TODO make this trigger off of obsproc dump job completion
               trigger :TIME >= 1507 and :TIME < 1512
@@ -12497,7 +12451,6 @@ suite gfs_v17_nco
         endfamily		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgfs_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/12/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete
@@ -12506,7 +12459,6 @@ suite gfs_v17_nco
         endfamily		//init
         family analysis
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger  /gfs_v17_0/primary/12/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../prep/atmos/jgfs_atmos_prep_sfc==complete and ../../prep/atmos/jgfs_atmos_tropcy_qc==complete and ../../../../06/enkfgdas/ensstat==complete
@@ -12519,7 +12471,6 @@ suite gfs_v17_nco
               trigger jgfs_atmos_anal_calc==complete
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgfs_marine_obs_dump==complete and ../../../../06/enkfgdas/forecast==complete and ../../../../06/gdas/forecast==complete
@@ -12535,7 +12486,6 @@ suite gfs_v17_nco
               trigger jgfs_marine_anal_chkpt==complete
           endfamily		//marine
           family snow
-            edit WGF 'snow'
             task jgfs_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/12/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../../../06/gdas/forecast/jgdas_fcst==complete
@@ -13309,7 +13259,6 @@ suite gfs_v17_nco
         endfamily		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgfs_atmos_products_f000
                 edit FHR '000'
@@ -16244,7 +16193,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily		//atmos
           family ice
-            edit WGF 'ice'
             task jgfs_ice_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -16503,7 +16451,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ice_products_f384
           endfamily		//ice
           family ocean
-            edit WGF 'ocean'
             task jgfs_ocean_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -16762,7 +16709,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ocean_products_f384
           endfamily		//ocean
           family wave
-            edit WGF 'wave'
             family gridded
               task jgfs_wave_post_gridded_f000
                 edit FHR '000'
@@ -17791,7 +17737,6 @@ suite gfs_v17_nco
         endfamily		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_vminmon
               trigger ../../analysis/atmos/jgfs_atmos_anal==complete
           endfamily		//atmos
@@ -17801,7 +17746,6 @@ suite gfs_v17_nco
         edit RUN 'gdas'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_tropcy_qc
               trigger :TIME >= 1745 and :TIME < 1750
             task jgdas_atmos_prep_sfc
@@ -17810,7 +17754,6 @@ suite gfs_v17_nco
               trigger :TIME >= 1810 and :TIME < 1815
           endfamily  		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_obs_bufr_dump
             # TODO make this trigger off of obsproc dump job completion
               trigger :TIME >= 1810 and :TIME < 1815
@@ -17820,7 +17763,6 @@ suite gfs_v17_nco
         endfamily    		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgdas_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/12/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete
@@ -17847,7 +17789,6 @@ suite gfs_v17_nco
               trigger jgdas_atmos_anal_calc==complete
           endfamily  		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgdas_marine_obs_dump==complete and ../../../../06/enkfgdas/forecast==complete and ../../../../06/gdas/forecast==complete
@@ -17863,7 +17804,6 @@ suite gfs_v17_nco
               trigger jgdas_marine_anal_chkpt==complete
           endfamily  		//marine
           family snow
-            edit WGF 'snow'
             task jgdas_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/12/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete and ../../../../06/gdas/forecast/jgdas_fcst==complete
@@ -17902,7 +17842,6 @@ suite gfs_v17_nco
         endfamily    		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgdas_atmos_products_f000
                 edit FHR '000'
@@ -17995,7 +17934,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily  		//atmos
           family wave
-            edit WGF 'wave'
             family gridded
               task jgdas_wave_post_gridded_f000
                 edit FHR '000'
@@ -18044,7 +17982,6 @@ suite gfs_v17_nco
         endfamily    		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_verfozn
               trigger ../../analysis/atmos/jgdas_atmos_anal_diag==complete
             task jgdas_atmos_verfrad
@@ -18056,8 +17993,6 @@ suite gfs_v17_nco
       endfamily      		//gdas
       family enkfgdas
         edit RUN 'enkfgdas'
-        edit WGF 'enkf'
-        edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
         family analysis
           family create
             task jenkfgdas_atmos_ens_observer
@@ -18695,14 +18630,12 @@ suite gfs_v17_nco
 
     family 18
       edit CYC '18'
-      edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
       task cycle_begin
         trigger (../12/gdas/forecast == active or ../12/gdas/forecast == complete) and (../06/gfs/forecast != active)
       family gfs
         edit RUN 'gfs'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_tropcy_qc
               #event 1 jtwc_bull_email
               trigger :TIME >= 2041 and :TIME < 2045
@@ -18712,7 +18645,6 @@ suite gfs_v17_nco
               trigger :TIME >= 2107 and :TIME < 2112
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_obs_bufr_dump
               # TODO make this trigger off of obsproc dump job completion
               trigger :TIME >= 2107 and :TIME < 2112
@@ -18723,7 +18655,6 @@ suite gfs_v17_nco
         endfamily		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgfs_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/18/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete
@@ -18732,7 +18663,6 @@ suite gfs_v17_nco
         endfamily		//init
         family analysis
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger  /gfs_v17_0/primary/18/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../prep/atmos/jgfs_atmos_prep_sfc==complete and ../../prep/atmos/jgfs_atmos_tropcy_qc==complete and ../../../../12/enkfgdas/ensstat==complete
@@ -18745,7 +18675,6 @@ suite gfs_v17_nco
               trigger jgfs_atmos_anal_calc==complete
           endfamily		//atmos
           family marine
-            edit WGF 'marine'
             task jgfs_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgfs_marine_obs_dump==complete and ../../../../12/enkfgdas/forecast==complete and ../../../../12/gdas/forecast==complete
@@ -18761,7 +18690,6 @@ suite gfs_v17_nco
               trigger jgfs_marine_anal_chkpt==complete
           endfamily		//marine
           family snow
-            edit WGF 'snow'
             task jgfs_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/18/obsproc/v1.3/gfs/atmos/prep/jobsproc_gfs_atmos_prep == complete and ../../../../12/gdas/forecast/jgdas_fcst==complete
@@ -19535,7 +19463,6 @@ suite gfs_v17_nco
         endfamily		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgfs_atmos_products_f000
                 edit FHR '000'
@@ -22470,7 +22397,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily		//atmos
           family ice
-            edit WGF 'ice'
             task jgfs_ice_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -22729,7 +22655,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ice_products_f384
           endfamily		//ice
           family ocean
-            edit WGF 'ocean'
             task jgfs_ocean_products_f006
               edit FHR '006'
               edit FHR_LIST '6'
@@ -22988,7 +22913,6 @@ suite gfs_v17_nco
               trigger ../../forecast/jgfs_fcst_fsm:release_gfs_ocean_products_f384
           endfamily		//ocean
           family wave
-            edit WGF 'wave'
             family gridded
               task jgfs_wave_post_gridded_f000
                 edit FHR '000'
@@ -24017,7 +23941,6 @@ suite gfs_v17_nco
         endfamily		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgfs_atmos_vminmon
               trigger ../../analysis/atmos/jgfs_atmos_anal==complete
           endfamily		//atmos
@@ -24027,7 +23950,6 @@ suite gfs_v17_nco
         edit RUN 'gdas'
         family prep
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_tropcy_qc
               trigger :TIME >= 2345 and :TIME < 2350
             task jgdas_atmos_prep_sfc
@@ -24036,7 +23958,6 @@ suite gfs_v17_nco
               trigger :TIME >= 0010 and :TIME < 0015
           endfamily  		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_obs_bufr_dump
               #TODO NCO/OPS should use obsproc completion trigger
               trigger :TIME >= 0010 and :TIME < 0015
@@ -24047,7 +23968,6 @@ suite gfs_v17_nco
         endfamily    		//prep
         family init
           family wave
-            edit WGF 'wave'
             task jgdas_wave_init
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/18/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete
@@ -24074,7 +23994,6 @@ suite gfs_v17_nco
               trigger jgdas_atmos_anal_calc==complete
           endfamily  		//atmos
           family marine
-            edit WGF 'marine'
             task jgdas_marine_bmat_init
               # TODO make this trigger off of obsproc dump job completion
               trigger ../../prep/marine/jgdas_marine_obs_dump==complete and ../../../../12/enkfgdas/forecast==complete and ../../../../12/gdas/forecast==complete
@@ -24090,7 +24009,6 @@ suite gfs_v17_nco
               trigger jgdas_marine_anal_chkpt==complete
           endfamily  		//marine
           family snow
-            edit WGF 'snow'
             task jgdas_snow_anal
               #NCO/Ops should use obsproc trigger.  Sfc prep trigger is a workaround for development
               #trigger /gfs_v17_0/primary/18/obsproc/v1.3/gdas/atmos/prep/jobsproc_gdas_atmos_prep == complete and ../../../../12/gdas/forecast/jgdas_fcst==complete
@@ -24129,7 +24047,6 @@ suite gfs_v17_nco
         endfamily    		//forecast
         family product
           family atmos
-            edit WGF 'atmos'
             family product
               task jgdas_atmos_products_f000
                 edit FHR '000'
@@ -24222,7 +24139,6 @@ suite gfs_v17_nco
             endfamily		//gempak
           endfamily  		//atmos
           family wave
-            edit WGF 'wave'
             family gridded
               task jgdas_wave_post_gridded_f000
                 edit FHR '000'
@@ -24271,7 +24187,6 @@ suite gfs_v17_nco
         endfamily    		//product
         family verf
           family atmos
-            edit WGF 'atmos'
             task jgdas_atmos_verfozn
               trigger ../../analysis/atmos/jgdas_atmos_anal_diag==complete
             task jgdas_atmos_verfrad
@@ -24283,8 +24198,6 @@ suite gfs_v17_nco
       endfamily      		//gdas
       family enkfgdas
         edit RUN 'enkfgdas'
-        edit WGF 'enkf'
-        edit ECF_FILES '%PACKAGEHOME%/ecf/scripts'
         family analysis
           family create
             task jenkfgdas_atmos_ens_observer

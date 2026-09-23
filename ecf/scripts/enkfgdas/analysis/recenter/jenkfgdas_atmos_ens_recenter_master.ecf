@@ -34,14 +34,12 @@ module list
 ############################################################
 # CALL executable job script here
 ############################################################
-export WGF="%WGF%"
 export FHRGRP="%FHRGRP%"
 export FHRLST="%FHRLST%"
 export FHMIN_ECEN="${FHRLST}"
 export FHMAX_ECEN="${FHRLST}"
 export FHOUT_ECEN="${FHRLST}"
 export HOMEglobal=${HOMEgfs}
-export COMPONENT=${WGF}
 
 ${HOMEgfs}/jobs/JGLOBAL_ATMOS_ENS_RECENTER
 if [ $? -ne 0 ]; then

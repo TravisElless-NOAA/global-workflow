@@ -24,10 +24,8 @@ module load cray-pals/${cray_pals_ver}
 module load gempak/${gempak_ver}
 
 module list
-export WGF="%WGF%"
 export FHR3="%FHR%"
 export FHR_LIST="%FHR_LIST%"
-export COMPONENT=${WGF}
 ############################################################
 # CALL executable job script here
 ############################################################

@@ -24,10 +24,8 @@ module load gempak/${gempak_ver}
 module load wgrib2/${wgrib2_ver}
 
 module list
-export WGF="%WGF%"
 export FHR3="%FHR%"
 export FHR_LIST="%FHR_LIST%"
-export COMPONENT=${WGF}
 ############################################################
 # CALL executable job script here
 ############################################################

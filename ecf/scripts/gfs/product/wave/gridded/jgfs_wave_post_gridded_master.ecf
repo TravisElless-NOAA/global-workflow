@@ -30,7 +30,6 @@ module load grib_util/${grib_util_ver}
 module load wgrib2/${wgrib2_ver}
 
 module list
-export WGF="%WGF%"
 export FHR="%FHR%"
 export FHR_LIST="%FHR_LIST%"
 export FORECAST_HOUR="${FHR_LIST}"

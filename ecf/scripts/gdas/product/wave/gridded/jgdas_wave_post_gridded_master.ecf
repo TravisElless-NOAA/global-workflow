@@ -33,12 +33,10 @@ module list
 ############################################################
 # CALL executable job script here
 ############################################################
-export WGF="%WGF%"
 export FHR="%FHR%"
 export FHR_LIST="%FHR_LIST%"
 export FORECAST_HOUR="${FHR_LIST}"
 export HOMEglobal=${HOMEgfs}
-export COMPONENT=${WGF}
 
 #### ${HOMEgfs}/dev/job_cards/rocoto/wavepostsbs.sh
 ${HOMEgfs}/jobs/JGLOBAL_WAVE_POST_GRIDDED
