@@ -63,18 +63,22 @@ Same UFS model as deterministic but lower resolution and without wave coupling.
 If a single member or a few members fail, the recovery strategy 
 is to copy the entire contents of a successful member from COM 
 (ie. enkfgdas.${PDY}/${CYC}/mem${MEM}/*) to the failed member. 
+
 If all enkf forecast members fail,  it is possible that upstream analysis 
 might be the cause, but we can also look to decrease the model 
 forecast time steps. 
-To  reduce the atm time step, in the GFSv17 package, in 
-parm/gfs/config.ufs change DELTIM=300 in the ${fv3_res}=C384 
-section without a nest, to DELTIM=150. 
-To reduce the ocn time step, in the GFSv17 package, in 
-parm/gfs/config.ufs in the "MOM6 specific settings" section for case 
-${mom6_res}=025 change, OCNTIM='900' and
- DT_THERM_MOM6='1800' -> '900'. 
-Note this section is used for gfs and gdas forecasts as well and will 
-need to be changed back for those forecasts to run with the original 
-time steps.
+
+ACTIONS FOR INSTABILITY:
+
+A. ATMOSPHERIC MODEL INSTABILITY:
+If log files indicate the atmosphere is blowing up due to numerical instability in the atmospheric model (see item 1 above), try reducing the atmospheric time step proportionally and restart.
+To modify, export the following in job card:
+     export DELTIM=150
+
+B. OCEAN MODEL INSTABILITY (MOM6):
+If the logfile shows "btstep: eta has dropped below bathyT" warnings or ocean CFL crashes, mitigate this by reducing the ocean thermal/dynamics step.
+To reduce the time step values from 1800 to 900, export the following in job card:
+     export OCNTIM=900
+     export DT_THERM_MOM6='900'
 
 %end

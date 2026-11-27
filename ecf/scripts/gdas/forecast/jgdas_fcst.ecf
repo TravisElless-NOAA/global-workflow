@@ -70,19 +70,13 @@ ACTIONS FOR INSTABILITY:
 
 A. ATMOSPHERIC MODEL INSTABILITY:
 If log files indicate the atmosphere is blowing up due to numerical instability in the atmospheric model (see item 1 above), try reducing the atmospheric time step proportionally and restart.
-To modify:
-  1. Open parm/config/gfs/config.ufs in the gfsv17 package.
-  2. Locate the ${fv3_res}=C786 case section.
-  3. Modify the step value (DELTIM) downward from its default setting:
-     export DELTIM=120  
+To modify, export the following in job card:
+     export DELTIM=120  (or 90)
 
 B. OCEAN MODEL INSTABILITY (MOM6):
 If the logfile shows "btstep: eta has dropped below bathyT" warnings or ocean CFL crashes, mitigate this by reducing the ocean thermal/dynamics step.
-To modify:
-  1. Open parm/config/gfs/config.ufs in the gfsv17 package.
-  2. Locate the "MOM6 specific settings" section for case ${mom6_res}=025.
-  3. Reduce the time step values from 1800 to 900:
-     OCNTIM=900
-     DT_THERM_MOM6='900'
+To reduce the time step values from 1800 to 900, export the following in job card:
+     export OCNTIM=900
+     export DT_THERM_MOM6='900'
 
 %end
