@@ -26,7 +26,6 @@ fi
 SELECTIVE_CLEANUP_MIN=${SELECTIVE_CLEANUP_MIN:-24}
 SELECTIVE_CLEANUP_MAX=${SELECTIVE_CLEANUP_MAX:-120}
 RTOFS_CLEANUP=${RTOFS_CLEANUP:-24}
-GEMPAK_CLEANUP=${GEMPAK_CLEANUP:-240}
 ###############################################################
 # Clean up previous cycles; various depths
 
@@ -35,11 +34,8 @@ GEMPAK_CLEANUP=${GEMPAK_CLEANUP:-240}
 # Retain files needed by Fit2Obs
 first_selective_date=$(date --utc +%Y%m%d%H -d "${PDY} ${cyc} -${SELECTIVE_CLEANUP_MAX} hours")
 last_selective_date=$(date --utc +%Y%m%d%H -d "${PDY} ${cyc} -${SELECTIVE_CLEANUP_MIN} hours")
-gempak_cutoff_date=$(date --utc +%Y%m%d%H -d "${PDY} ${cyc} -${GEMPAK_CLEANUP} hours")
 # Selective exclude list
 selective_exclude_string="${selective_exclude_string:-}"
-# Gempak exclude list
-gempak_exclude_string+=", gfs_1p00_*"
 
 # RTOFS is cleaned separately (for all RUNs)
 rtofs_cutoff_date=$(date --utc +%Y%m%d%H -d "${PDY} ${cyc} -${RTOFS_CLEANUP} hours")
@@ -47,9 +43,6 @@ rtofs_cutoff_date=$(date --utc +%Y%m%d%H -d "${PDY} ${cyc} -${RTOFS_CLEANUP} hou
 # Find the first and last date among all cleanup targets
 max_cleanup_max="${SELECTIVE_CLEANUP_MAX:-120}"
 max_list="${SELECTIVE_CLEANUP_MAX}"
-if [[ "${RUN}" == "gfs" && "${DO_GEMPAK}" == "YES" ]]; then
-    max_list+=" ${GEMPAK_CLEANUP}"
-fi
 
 for cleanup_max in ${max_list}; do
     if [[ ${cleanup_max} -gt ${max_cleanup_max} ]]; then
@@ -105,12 +98,6 @@ current_date = $(date --utc +%Y%m%d%H -d "${current_date:0:8} ${current_date:8:2
     exclude_string=""
     if [[ ${current_date} -ge ${first_selective_date} && ${current_date} -le ${last_selective_date} ]]; then
         exclude_string+="${selective_exclude_string}"
-    fi
-
-    # Extend the exclude list for gempak files if needed
-    if [[ "${RUN}" == "gfs" && ${current_date} -ge ${gempak_cutoff_date} && "${DO_GEMPAK}" == "YES" ]]; then
-        # Provide the gempak exclude pattern(s)
-        exclude_string+="${gempak_exclude_string}"
     fi
 
     # Check if the cycle completed successfully by looking at the rocoto log

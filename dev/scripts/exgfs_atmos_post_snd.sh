@@ -197,12 +197,4 @@ chmod +x cmdfile
 
 ${APRUN_POSTSNDCFP} cmdfile
 
-########################################
-# Read BUFR output and transfer into
-# GEMPAK surface and sounding data files
-########################################
-if [[ "${DO_GEMPAK:-"NO"}" == "YES" ]]; then
-    sh "${USHglobal}/gfs_bfr2gpk.sh"
-fi
-
 ############## END OF SCRIPT #######################
