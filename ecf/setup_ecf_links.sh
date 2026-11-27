@@ -186,51 +186,6 @@ while [[ "${fhr_start}" -le "${fhr_end}" ]]; do
     add_to_tmpfile "scripts/enkfgdas/ensstat/jenkfgdas_ens_post${head_3d}.ecf"
 done
 
-# gfs atmos gempak files
-cd "${ECF_DIR}/scripts/gfs/product/atmos/gempak"
-echo "Copy gfs atmos gempak files ..."
-rm -f jgfs_atmos_gempak_f*.ecf
-fhr_end=384
-fhr_start=0
-while [[ "${fhr_start}" -le "${fhr_end}" ]]; do
-    head_3d=$(printf "%03d" "${fhr_start}")
-    cp jgfs_atmos_gempak_master.ecf "jgfs_atmos_gempak_f${head_3d}.ecf"
-    if [[ "${fhr_start}" -lt 120 ]]; then
-        fhr_start=$((fhr_start + 1))
-    else
-        fhr_start=$((fhr_start + 3))
-    fi
-    add_to_tmpfile "scripts/gfs/product/atmos/gempak/gempak/jgfs_atmos_gempak_f${head_3d}.ecf"
-done
-
-# gfs weav gempak files
-cd "${ECF_DIR}/scripts/gfs/product/wave/gempak"
-echo "Copy gfs weav gempak files ..."
-rm -f jgfs_wave_gempak_f*.ecf
-fhr_end=180
-fhr_start=0
-while [[ "${fhr_start}" -le "${fhr_end}" ]]; do
-    step=3
-    [[ "${fhr_start}" -ge 72 ]] && step=6
-    head_3d=$(printf "%03d" "${fhr_start}")
-    cp jgfs_wave_gempak_master.ecf "jgfs_wave_gempak_f${head_3d}.ecf"
-    fhr_start=$((fhr_start + step))
-    add_to_tmpfile "scripts/gfs/product/wave/gempak/jgfs_wave_gempak_f${head_3d}.ecf"
-done
-
-# gdas atmos gempak files
-cd "${ECF_DIR}/scripts/gdas/product/atmos/gempak"
-echo "Copy gfs atmos gempak files ..."
-rm -f jgdas_atmos_gempak_f*.ecf
-fhr_end=9
-fhr_start=0
-while [[ "${fhr_start}" -le "${fhr_end}" ]]; do
-    head_3d=$(printf "%03d" "${fhr_start}")
-    cp jgdas_atmos_gempak_master.ecf "jgdas_atmos_gempak_f${head_3d}.ecf"
-    fhr_start=$((fhr_start + 1))
-    add_to_tmpfile "scripts/gdas/product/atmos/gempak/gempak/jgdas_atmos_gempak_f${head_3d}.ecf"
-done
-
 # gfs atmos goesupp files
 cd "${ECF_DIR}/scripts/gfs/product/atmos/goesupp"
 echo "Copy gfs atmos goesupp files ..."
@@ -263,17 +218,4 @@ while [[ "${fhr_start}" -le "${fhr_end}" ]]; do
         fhr_start=$((fhr_start + 3))
     fi
     add_to_tmpfile "scripts/gfs/product/atmos/awips_20km_1p0/jgfs_atmos_awips_20km_1p0_f${head_3d}.ecf"
-done
-
-# gfs atmos grb2spec files
-cd "${ECF_DIR}/scripts/gfs/product/atmos/grb2spec"
-echo "Copy gfs atmos gempak grb2spec files ..."
-rm -f jgfs_atmos_gempak_pgrb2_spec_f*.ecf
-fhr_end=180
-fhr_start=0
-while [[ "${fhr_start}" -le "${fhr_end}" ]]; do
-    head_3d=$(printf "%03d" "${fhr_start}")
-    cp jgfs_atmos_gempak_pgrb2_spec_master.ecf "jgfs_atmos_gempak_pgrb2_spec_f${head_3d}.ecf"
-    fhr_start=$((fhr_start + 3))
-    add_to_tmpfile "scripts/gfs/product/atmos/grb2spec/jgfs_atmos_gempak_pgrb2_spec_f${head_3d}.ecf"
 done

@@ -24,8 +24,8 @@ if (( $# != 1 )); then
     echo "eobs ediag eupd ecen esfc_gcycle esfc_regrid efcs epos earc_vrfy earc_tars"
     echo "init_chem mom6ic oceanice_products"
     echo "waveinit waveprep wavepostgridded wavepostbndpnt wavepostbndpntbll wavepostpnt"
-    echo "wavegempak waveawipsbulls waveawipsgridded"
-    echo "postsnd awips gempak npoess"
+    echo "waveawipsbulls waveawipsgridded"
+    echo "postsnd awips npoess"
     echo "marineanlinit prepoceanobs marinebmatinit marinebmat marineanlvar marineanlecen marineanalletkf marineanlchkpt marineanlfinal ocnanalvrfy"
     echo "marineobsdump marineobsbufrdump"
     exit 1
@@ -203,15 +203,6 @@ case ${step} in
         export is_exclusive=False
     fi
     NTASKS=${ntasks}
-    ;;
-
-  "wavegempak")
-    walltime="00:10:00"
-    ntasks=1
-    threads_per_task=1
-    tasks_per_node=$(( max_tasks_per_node / threads_per_task ))
-    NTASKS=${ntasks}
-    memory="1GB"
     ;;
 
   "waveawipsbulls")
@@ -1439,21 +1430,6 @@ case ${step} in
     tasks_per_node=1
     threads_per_task=1
     memory="3GB"
-    ;;
-
-  "gempak")
-    # Walltime is per forecast hour; will be multipled by group size
-    walltime="00:10:00"
-    threads_per_task=1
-    if [[ "${RUN}" = *gdas ]]; then
-      ntasks=2
-      tasks_per_node=2
-      memory="4GB"
-    elif [[ "${RUN}" = *gfs ]]; then
-      ntasks=28
-      tasks_per_node=28
-      memory="8GB"
-    fi
     ;;
 
   "fbwind")

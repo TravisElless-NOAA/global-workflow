@@ -337,12 +337,6 @@ export FHMAX_HF_WAV=$(( FHMAX_HF_WAV > FHMAX_WAV_GFS ? FHMAX_WAV_GFS : FHMAX_HF_
 export FHOUT_OCN_GFS=6
 export FHOUT_ICE_GFS=6
 
-# TODO: Change gempak to use standard out variables (#2348)
-export ILPOST=${FHOUT_HF_GFS}           # gempak output frequency up to F120
-if (( FHMAX_HF_GFS < 120 )); then
-    export ILPOST=${FHOUT_GFS}
-fi
-
 # Limit bounds of goes processing
 export FHMAX_GOES=180
 export FHOUT_GOES=3
